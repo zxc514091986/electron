@@ -23,8 +23,10 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
+#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/Source/platform/weborigin/SchemeRegistry.h"
+#include "url/gurl.h"
 
 #include "atom/common/node_includes.h"
 
@@ -199,6 +201,18 @@ void WebFrame::RegisterURLSchemeAsPrivileged(const std::string& scheme,
   }
 }
 
+void WebFrame::AddOriginAccessWhitelistEntry(
+    const std::string& sourceOrigin,
+    const std::string& destinationProtocol,
+    const std::string& destinationHost,
+    bool allowDestinationSubdomains) {
+    blink::WebSecurityPolicy::AddOriginAccessWhitelistEntry(
+        GURL(sourceOrigin.c_str()),
+        blink::WebString::FromUTF8(destinationProtocol),
+        blink::WebString::FromUTF8(destinationHost),
+        allowDestinationSubdomains);
+};
+
 void WebFrame::InsertText(const std::string& text) {
   web_frame_->FrameWidget()
             ->GetActiveWebInputMethodController()
@@ -272,6 +286,8 @@ void WebFrame::BuildPrototype(
                  &WebFrame::RegisterURLSchemeAsBypassingCSP)
       .SetMethod("registerURLSchemeAsPrivileged",
                  &WebFrame::RegisterURLSchemeAsPrivileged)
+      .SetMethod("addOriginAccessWhitelistEntry",
+                 &WebFrame::AddOriginAccessWhitelistEntry)
       .SetMethod("insertText", &WebFrame::InsertText)
       .SetMethod("insertCSS", &WebFrame::InsertCSS)
       .SetMethod("executeJavaScript", &WebFrame::ExecuteJavaScript)

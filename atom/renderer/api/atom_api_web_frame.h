@@ -66,9 +66,13 @@ class WebFrame : public mate::Wrappable<WebFrame> {
   void RegisterURLSchemeAsBypassingCSP(const std::string& scheme);
   void RegisterURLSchemeAsPrivileged(const std::string& scheme,
                                      mate::Arguments* args);
+  void AddOriginAccessWhitelistEntry(const std::string& sourceOrigin,
+                                     const std::string& destinationProtocol,
+                                     const std::string& destinationHost,
+                                     bool allowDestinationSubdomains);
 
-  // Editing.
-  void InsertText(const std::string& text);
+      // Editing.
+      void InsertText(const std::string& text);
   void InsertCSS(const std::string& css);
 
   // Excecuting scripts.
