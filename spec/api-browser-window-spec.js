@@ -1113,6 +1113,25 @@ describe('BrowserWindow module', () => {
         })
       })
 
+      it('allows for execution of webContents.executeJavaScript()', (done) => {
+        w.destroy()
+        w = new BrowserWindow({
+          show: false,
+          webPreferences: {
+            sandbox: true,
+            preload: preload
+          }
+        })
+        w.loadURL('file://' + path.join(fixtures, 'api', 'preload.html'))
+
+        w.webContents.once('did-finish-load', () => {
+          w.webContents.executeJavaScript('123', false, res => {
+            console.log(res)
+            done()
+          })
+        })
+      })
+
       it('exposes ipcRenderer to preload script', (done) => {
         ipcMain.once('answer', function (event, test) {
           assert.equal(test, 'preload')
@@ -2122,7 +2141,7 @@ describe('BrowserWindow module', () => {
             assert.equal(w.webContents.isLoadingMainFrame(), false)
             done()
           })
-          w.webContents.executeJavaScript(`
+          w.webContents.Script(`
             var iframe = document.createElement('iframe')
             iframe.src = '${server.url}/page2'
             document.body.appendChild(iframe)
