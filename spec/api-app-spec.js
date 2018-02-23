@@ -450,11 +450,7 @@ describe('app module', () => {
     })
 
     it('allows you to pass a custom executable and arguments', function () {
-      if (process.platform !== 'win32') {
-        // FIXME(alexeykuzmin): Skip the test.
-        // this.skip()
-        return
-      }
+      if (process.platform !== 'win32') this.skip()
 
       app.setLoginItemSettings({openAtLogin: true, path: updateExe, args: processStartArgs})
 
@@ -694,9 +690,7 @@ describe('app module', () => {
     // doesn't affect nested `describe`s.
     beforeEach(function () {
       // FIXME Get these specs running on Linux CI
-      if (process.platform === 'linux' && isCI) {
-        this.skip()
-      }
+      if (isCI && process.platform === 'linux') this.skip()
     })
 
     it('fetches a non-empty icon', (done) => {
@@ -717,7 +711,12 @@ describe('app module', () => {
       })
     })
 
-    describe('size option', () => {
+    describe('size option', function () {
+      beforeEach(function () {
+        // FIXME Get these specs running on Linux CI
+        if (isCI && process.platform === 'linux') this.skip()
+      })
+
       it('fetches a small icon', (done) => {
         app.getFileIcon(iconPath, { size: 'small' }, (err, icon) => {
           const size = icon.getSize()
@@ -729,7 +728,7 @@ describe('app module', () => {
       })
 
       it('fetches a normal icon', (done) => {
-        app.getFileIcon(iconPath, { size: 'normal' }, function (err, icon) {
+        app.getFileIcon(iconPath, { size: 'normal' }, (err, icon) => {
           const size = icon.getSize()
           assert.equal(err, null)
           assert.equal(size.height, sizes.normal)
@@ -740,13 +739,9 @@ describe('app module', () => {
 
       it('fetches a large icon', function (done) {
         // macOS does not support large icons
-        if (process.platform === 'darwin') {
-          // FIXME(alexeykuzmin): Skip the test.
-          // this.skip()
-          return done()
-        }
+        if (process.platform === 'darwin') this.skip()
 
-        app.getFileIcon(iconPath, { size: 'large' }, function (err, icon) {
+        app.getFileIcon(iconPath, { size: 'large' }, (err, icon) => {
           const size = icon.getSize()
           assert.equal(err, null)
           assert.equal(size.height, sizes.large)
@@ -795,14 +790,7 @@ describe('app module', () => {
     let server = null
     const socketPath = process.platform === 'win32' ? '\\\\.\\pipe\\electron-mixed-sandbox' : '/tmp/electron-mixed-sandbox'
 
-    beforeEach(function (done) {
-      // XXX(alexeykuzmin): Calling `.skip()` inside a `before` hook
-      // doesn't affect nested `describe`s.
-      // FIXME Get these specs running on Linux
-      if (process.platform === 'linux') {
-        this.skip()
-      }
-
+    beforeEach((done) => {
       fs.unlink(socketPath, () => {
         server = net.createServer()
         server.listen(socketPath)
@@ -823,6 +811,11 @@ describe('app module', () => {
     })
 
     describe('when app.enableMixedSandbox() is called', () => {
+      beforeEach(function (done) {
+        // FIXME Get these specs running on Linux
+        if (process.platform === 'linux') this.skip()
+      })
+
       it('adds --enable-sandbox to render processes created with sandbox: true', (done) => {
         const appPath = path.join(__dirname, 'fixtures', 'api', 'mixed-sandbox-app')
         appProcess = ChildProcess.spawn(remote.process.execPath, [appPath])
@@ -851,12 +844,10 @@ describe('app module', () => {
         const appPath = path.join(__dirname, 'fixtures', 'api', 'mixed-sandbox-app')
         appProcess = ChildProcess.spawn(remote.process.execPath, [appPath, '--enable-mixed-sandbox'])
 
-        server.once('error', (error) => {
-          done(error)
-        })
+        server.once('error', (error) => { done(error) })
 
         server.on('connection', (client) => {
-          client.once('data', function (data) {
+          client.once('data', (data) => {
             const argv = JSON.parse(data)
             assert.equal(argv.sandbox.includes('--enable-sandbox'), true)
             assert.equal(argv.sandbox.includes('--no-sandbox'), false)
