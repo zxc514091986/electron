@@ -1,6 +1,6 @@
-const assert = require('assert')
 const childProcess = require('child_process')
-const {expect} = require('chai')
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
 const fs = require('fs')
 const http = require('http')
 const multiparty = require('multiparty')
@@ -9,10 +9,13 @@ const temp = require('temp').track()
 const url = require('url')
 const {closeWindow} = require('./window-helpers')
 
+const {expect} = chai
+chai.use(dirtyChai)
+
 const {remote} = require('electron')
 const {app, BrowserWindow, crashReporter} = remote.require('electron')
 
-describe('crashReporter module', () => {
+describe.only('crashReporter module', () => {
   if (process.mas || process.env.DISABLE_CRASH_REPORTER_TESTS) return
 
   let originalTempDirectory = null
@@ -120,7 +123,7 @@ describe('crashReporter module', () => {
         const testDone = (uploaded) => {
           if (uploaded) return done(new Error('Uploaded crash report'))
           if (process.platform === 'darwin') crashReporter.setUploadToServer(true)
-          assert(fs.existsSync(dumpFile))
+          expect(fs.existsSync(dumpFile).to.equal(true))
           done()
         }
 
@@ -131,7 +134,7 @@ describe('crashReporter module', () => {
             const dumps = files.filter((file) => /\.dmp$/.test(file) && !existingDumpFiles.has(file))
             if (!dumps.length) return
 
-            assert.equal(1, dumps.length)
+            expect(dumps.length).to.equal(1)
             dumpFile = path.join(crashesDir, dumps[0])
             clearInterval(pollInterval)
             // dump file should not be deleted when not uploading, so we wait
@@ -202,28 +205,30 @@ describe('crashReporter module', () => {
     it('returns the product name if one is specified', () => {
       const name = crashReporter.getProductName()
       const expectedName = (process.platform === 'darwin') ? 'Electron Test' : 'Zombies'
-      assert.equal(name, expectedName)
+      expect(name).to.equal(expectedName)
     })
   })
 
   describe('getTempDirectory', () => {
     it('returns temp directory for app if one is specified', () => {
       const tempDir = crashReporter.getTempDirectory()
-      assert.equal(tempDir, app.getPath('temp'))
+      expect(tempDir).to.equal(app.getPath('temp'))
     })
   })
 
   describe('start(options)', () => {
     it('requires that the companyName and submitURL options be specified', () => {
-      assert.throws(() => {
+      expect(() => {
         crashReporter.start({companyName: 'Missing submitURL'})
-      }, /submitURL is a required option to crashReporter\.start/)
-      assert.throws(() => {
+      }).to.throw(/submitURL is a required option to crashReporter\.start/)
+
+      expect(() => {
         crashReporter.start({submitURL: 'Missing companyName'})
-      }, /companyName is a required option to crashReporter\.start/)
+      }).to.throw(/companyName is a required option to crashReporter\.start/)
     })
+
     it('can be called multiple times', () => {
-      assert.doesNotThrow(() => {
+      expect(() => {
         crashReporter.start({
           companyName: 'Umbrella Corporation',
           submitURL: 'http://127.0.0.1/crashes'
@@ -233,7 +238,7 @@ describe('crashReporter module', () => {
           companyName: 'Umbrella Corporation 2',
           submitURL: 'http://127.0.0.1/more-crashes'
         })
-      })
+      }).to.not.throw()
     })
   })
 
@@ -246,14 +251,14 @@ describe('crashReporter module', () => {
       } else {
         dir = `${app.getPath('temp')}/Electron Test Crashes`
       }
-      assert.equal(crashesDir, dir)
+      expect(crashesDir).to.equal(dir)
     })
   })
 
   describe('getUploadedReports', () => {
     it('returns an array of reports', () => {
       const reports = crashReporter.getUploadedReports()
-      assert(typeof reports === 'object')
+      expect(reports).to.be.an('object')
     })
   })
 
@@ -277,8 +282,8 @@ describe('crashReporter module', () => {
           ? { report: cur, timestamp: timestamp }
           : acc
       }, { timestamp: -Infinity })
-      assert(newestReport, 'Hey!')
 
+      expect(newestReport).to.equal('Hey!')
       expect(lastReport.date.getTime()).to.be.equal(
           newestReport.date.getTime(),
           'Last report is not the newest.')
@@ -287,8 +292,9 @@ describe('crashReporter module', () => {
 
   describe('getUploadToServer()', () => {
     it('throws an error when called from the renderer process', () => {
-      assert.throws(() => require('electron').crashReporter.getUploadToServer())
+      expect(() => require('electron').crashReporter.getUploadToServer()).to.throw()
     })
+
     it('returns true when uploadToServer is set to true', function () {
       if (process.platform !== 'darwin') {
         // FIXME(alexeykuzmin): Skip the test.
@@ -301,8 +307,9 @@ describe('crashReporter module', () => {
         submitURL: 'http://127.0.0.1/crashes',
         uploadToServer: true
       })
-      assert.equal(crashReporter.getUploadToServer(), true)
+      expect(crashReporter.getUploadToServer()).to.be.true()
     })
+
     it('returns false when uploadToServer is set to false', function () {
       if (process.platform !== 'darwin') {
         // FIXME(alexeykuzmin): Skip the test.
@@ -316,14 +323,15 @@ describe('crashReporter module', () => {
         uploadToServer: true
       })
       crashReporter.setUploadToServer(false)
-      assert.equal(crashReporter.getUploadToServer(), false)
+      expect(crashReporter.getUploadToServer()).to.be.false()
     })
   })
 
   describe('setUploadToServer(uploadToServer)', () => {
     it('throws an error when called from the renderer process', () => {
-      assert.throws(() => require('electron').crashReporter.setUploadToServer('arg'))
+      expect(() => require('electron').crashReporter.setUploadToServer('arg')).to.throw()
     })
+
     it('sets uploadToServer false when called with false', function () {
       if (process.platform !== 'darwin') {
         // FIXME(alexeykuzmin): Skip the test.
@@ -337,8 +345,9 @@ describe('crashReporter module', () => {
         uploadToServer: true
       })
       crashReporter.setUploadToServer(false)
-      assert.equal(crashReporter.getUploadToServer(), false)
+      expect(crashReporter.getUploadToServer()).to.be.false()
     })
+
     it('sets uploadToServer true when called with true', function () {
       if (process.platform !== 'darwin') {
         // FIXME(alexeykuzmin): Skip the test.
@@ -352,7 +361,7 @@ describe('crashReporter module', () => {
         uploadToServer: false
       })
       crashReporter.setUploadToServer(true)
-      assert.equal(crashReporter.getUploadToServer(), true)
+      expect(crashReporter.getUploadToServer()).to.be.true()
     })
   })
 
@@ -364,8 +373,9 @@ describe('crashReporter module', () => {
       })
 
       const parameters = crashReporter.getParameters()
-      assert(typeof parameters === 'object')
+      expect(parameters).to.be.an('object')
     })
+
     it('adds a parameter to current parameters', function () {
       if (process.platform !== 'darwin') {
         // FIXME(alexeykuzmin): Skip the test.
@@ -379,8 +389,9 @@ describe('crashReporter module', () => {
       })
 
       crashReporter.addExtraParameter('hello', 'world')
-      assert('hello' in crashReporter.getParameters())
+      expect(crashReporter.getParameters()).to.include('hello')
     })
+
     it('removes a parameter from current parameters', function () {
       if (process.platform !== 'darwin') {
         // FIXME(alexeykuzmin): Skip the test.
@@ -394,10 +405,10 @@ describe('crashReporter module', () => {
       })
 
       crashReporter.addExtraParameter('hello', 'world')
-      assert('hello' in crashReporter.getParameters())
+      expect(crashReporter.getParameters()).to.include('hello')
 
       crashReporter.removeExtraParameter('hello')
-      assert(!('hello' in crashReporter.getParameters()))
+      expect(crashReporter.getParameters()).to.not.include('hello')
     })
   })
 })
@@ -427,23 +438,26 @@ const startServer = ({callback, processType, done}) => {
       if (error) throw error
       if (called) return
       called = true
-      assert.equal(fields.prod, 'Electron')
-      assert.equal(fields.ver, process.versions.electron)
-      assert.equal(fields.process_type, processType)
-      assert.equal(fields.platform, process.platform)
-      assert.equal(fields.extra1, 'extra1')
-      assert.equal(fields.extra2, 'extra2')
-      assert.equal(fields.extra3, undefined)
-      assert.equal(fields._productName, 'Zombies')
-      assert.equal(fields._companyName, 'Umbrella Corporation')
-      assert.equal(fields._version, app.getVersion())
+
+      expect(fields).to.deep.equal({
+        prod: 'Electron',
+        ver: process.versions.electron,
+        process_type: processType,
+        platform: process.platform,
+        extra1: 'extra1',
+        extra2: 'extra2',
+        extra3: undefined,
+        _productName: 'Zombies',
+        _companyName: 'Umbrella Corporation',
+        _version: app.getVersion()
+      })
 
       const reportId = 'abc-123-def-456-abc-789-abc-123-abcd'
       res.end(reportId, () => {
         waitForCrashReport().then(() => {
-          assert.equal(crashReporter.getLastCrashReport().id, reportId)
-          assert.notEqual(crashReporter.getUploadedReports().length, 0)
-          assert.equal(crashReporter.getUploadedReports()[0].id, reportId)
+          expect(crashReporter.getLastCrashReport().id).to.equal(reportId)
+          expect(crashReporter.getUploadedReports().length).to.not.equal(0)
+          expect(crashReporter.getUploadedReports()[0].id).to.equal(reportId)
           req.socket.destroy()
           done()
         }, done)
