@@ -1,0 +1,58 @@
+resources:
+- repo: self
+steps:
+- bash: |
+    git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+    echo "##vso[task.setvariable variable=PATH]$PATH:`pwd`/depot_tools"
+  name: Setup_depot_tools
+
+- bash: |
+    gclient config \
+      --name "src/electron" \
+      --unmanaged \
+      --cache-dir "/Users/electron/libcc_cache" \
+      "https://github.com/electron/electron"
+    gclient sync --with_branch_heads --with_tags
+  name: gclient_sync
+
+- bash: |
+    cd src
+    export CHROMIUM_BUILDTOOLS_PATH=`pwd`/buildtools
+    echo "##vso[task.setvariable variable=CHROMIUM_BUILDTOOLS_PATH]`pwd`/buildtools"
+    gn gen out/Default --args='root_extra_deps=["//electron"] is_electron_build=true is_component_build=true use_jumbo_build=true v8_promise_internal_field_count=1 v8_typed_array_max_size_in_heap=0'
+  name: GN_gen
+
+- bash: |
+    ninja -C src/out/Default electron:electron_app
+  name: Ninja_build
+
+- bash: |
+    name: Test
+    environment:
+      MOCHA_FILE: junit/test-results.xml
+      MOCHA_REPORTER: mocha-junit-reporter
+    command: |
+       (cd electron/spec && npm i --nodedir=../../third_party/electron_node)
+       ./out/Default/electron electron/spec --ci
+
+- task: PublishTestResults@2
+  displayName: Publish Test Results
+  inputs:
+    testResultsFiles: '**/test-*.xml'
+  condition: and(always(), eq(variables['MOCHA_FILE'], 'test-results.xml'))
+
+- bash: |
+    export BUILD_URL="${SYSTEM_TEAMFOUNDATIONCOLLECTIONURI}${SYSTEM_TEAMPROJECT}/_build/results?buildId=${BUILD_BUILDID}"
+    export MESSAGE="Build failed for *<$BUILD_URL|$BUILD_DEFINITIONNAME>* nightly build."
+    curl -g -H "Content-Type: application/json" -X POST \
+    -d "{\"text\": \"$MESSAGE\", \"attachments\": [{\"color\": \"#FC5C3C\",\"title\": \"$BUILD_DEFINITIONNAME nightly build results\",\"title_link\": \"$BUILD_URL\"}]}" $(slack_webhook)
+  name: Post_Slack_Notification_on_Failure
+  condition: failed()
+
+- bash: |
+    export BUILD_URL="${SYSTEM_TEAMFOUNDATIONCOLLECTIONURI}${SYSTEM_TEAMPROJECT}/_build/results?buildId=${BUILD_BUILDID}"
+    export MESSAGE="Build succeeded for *<$BUILD_URL|$BUILD_DEFINITIONNAME>* nightly build."
+    curl -g -H "Content-Type: application/json" -X POST \
+    -d "{\"text\": \"$MESSAGE\", \"attachments\": [{\"color\": \"#FC5C3C\",\"title\": \"$BUILD_DEFINITIONNAME nightly build results\",\"title_link\": \"$BUILD_URL\"}]}" $(slack_webhook)
+  name: Post_Slack_Notification_on_Success
+  condition: succeeded()
