@@ -70,7 +70,7 @@ steps:
   displayName: Publish Test Results
   inputs:
     testResultsFiles: '**/test-*.xml'
-  condition: and(always(), eq(variables['MOCHA_FILE'], 'test-results.xml'))
+  condition: and(always(), eq(variables['MOCHA_FILE'], 'junit/test-results.xml'))
 
 - bash: |
     export BUILD_URL="${SYSTEM_TEAMFOUNDATIONCOLLECTIONURI}${SYSTEM_TEAMPROJECT}/_build/results?buildId=${BUILD_BUILDID}"

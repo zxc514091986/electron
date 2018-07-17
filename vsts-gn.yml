@@ -23,23 +23,21 @@ steps:
   name: GN_gen
 
 - bash: |
-    ninja -C src/out/Default electron:electron_app
+    cd src
+    ninja -C out/Default electron:electron_app
   name: Ninja_build
 
 - bash: |
-    name: Test
-    environment:
-      MOCHA_FILE: junit/test-results.xml
-      MOCHA_REPORTER: mocha-junit-reporter
-    command: |
-       (cd electron/spec && npm i --nodedir=../../third_party/electron_node)
-       ./out/Default/electron electron/spec --ci
+    cd src
+    (cd electron/spec && npm i --nodedir=../../third_party/electron_node)
+    ./out/Default/electron electron/spec --ci
+  name: Test
 
 - task: PublishTestResults@2
   displayName: Publish Test Results
   inputs:
     testResultsFiles: '**/test-*.xml'
-  condition: and(always(), eq(variables['MOCHA_FILE'], 'test-results.xml'))
+  condition: and(always(), eq(variables['MOCHA_FILE'], 'junit/test-results.xml'))
 
 - bash: |
     export BUILD_URL="${SYSTEM_TEAMFOUNDATIONCOLLECTIONURI}${SYSTEM_TEAMPROJECT}/_build/results?buildId=${BUILD_BUILDID}"
