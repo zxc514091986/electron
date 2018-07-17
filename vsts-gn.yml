@@ -11,7 +11,6 @@ steps:
       --name "src/electron" \
       --unmanaged \
       --cache-dir "/Users/electron/libcc_cache" \
-      --/Users/jkleinsc/work/libchromiumcontent/tools/sccache/aad2120/mac/sccache
       "https://github.com/electron/electron"
     gclient sync --with_branch_heads --with_tags
   name: gclient_sync
