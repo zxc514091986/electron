@@ -360,6 +360,11 @@ jobs:
           command: |
             cd src
             ninja -C out/Default electron:electron_app
+
+      - run:
+          name: Check sccache stats after build
+          command: $SCCACHE_WRAPPER -s
+
       - run:
           name: Check sccache stats after build
           command: $SCCACHE_WRAPPER -s

@@ -11,6 +11,7 @@ steps:
       --name "src/electron" \
       --unmanaged \
       --cache-dir "/Users/electron/libcc_cache" \
+      --/Users/jkleinsc/work/libchromiumcontent/tools/sccache/aad2120/mac/sccache
       "https://github.com/electron/electron"
     gclient sync --with_branch_heads --with_tags
   name: gclient_sync
@@ -18,8 +19,10 @@ steps:
 - bash: |
     cd src
     export CHROMIUM_BUILDTOOLS_PATH=`pwd`/buildtools
+    export SCCACHE_WRAPPER="`pwd`/libchromiumcontent/tools/sccache/aad2120/mac/sccache"
+    echo "##vso[task.setvariable variable=SCCACHE_WRAPPER]$SCCACHE_WRAPPER"
     echo "##vso[task.setvariable variable=CHROMIUM_BUILDTOOLS_PATH]`pwd`/buildtools"
-    gn gen out/Default --args='root_extra_deps=["//electron"] is_electron_build=true is_component_build=true use_jumbo_build=true v8_promise_internal_field_count=1 v8_typed_array_max_size_in_heap=0'
+    gn gen out/Default --args='cc_wrapper="$SCCACHE_WRAPPER" root_extra_deps=["//electron"] is_electron_build=true is_component_build=true use_jumbo_build=true v8_promise_internal_field_count=1 v8_typed_array_max_size_in_heap=0'
   name: GN_gen
 
 - bash: |
@@ -28,6 +31,11 @@ steps:
   name: Ninja_build
 
 - bash: |
+    $SCCACHE_WRAPPER -s
+  name: Check_sccache_stats
+
+- bash: |
+    set +e
     cd src
     (cd electron/spec && npm i --nodedir=../../third_party/electron_node)
     ./out/Default/electron electron/spec --ci
