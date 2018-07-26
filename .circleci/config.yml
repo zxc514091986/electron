@@ -354,7 +354,7 @@ jobs:
             echo 'export SCCACHE_WRAPPER="'`pwd`'/libchromiumcontent/tools/sccache/aad2120/linux/sccache"' >> $BASH_ENV
             echo 'export CHROMIUM_BUILDTOOLS_PATH=`pwd`/buildtools' >> $BASH_ENV
             source $BASH_ENV
-            gn gen out/Default --args='import("//electron/build/args/debug.gn")'
+            gn gen out/Default --args='import("//electron/build/args/debug.gn") sccache_wrapper="'"$SCCACHE_WRAPPER"'"'
       - run:
           name: Ninja build
           command: |
