@@ -43,8 +43,10 @@ phases:
   - bash: |
       set +e
       cd src
-      (cd electron/spec && npm i --nodedir=../../third_party/electron_node)
-      ./out/Default/electron electron/spec --ci
+      ninja -C out/Default electron/build/node:headers
+      export npm_config_nodedir="$PWD/out/Default/gen/node_headers"
+      (cd electron/spec && npm install)
+      ./out/Default/Electron.app/Contents/MacOS/Electron electron/spec --ci --enable-logging
     name: Test
 
   - task: PublishTestResults@2
