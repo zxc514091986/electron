@@ -154,14 +154,23 @@ gn-build-steps: &gn-build-steps
         command: |
           git clone --depth=1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
           echo 'export PATH="$PATH:'"$PWD"'/depot_tools"' >> $BASH_ENV
+    - run:
+        name: Install Node.js 10 on MacOS
+        command: |
+          if [ "$INSTALL_MACOS_NODE" == "true" ]; then
+            echo 'Installing Node.js 10 for MacOS'
+            brew update
+            brew install node@10
+            (cd /usr/local/bin; ln -sf gtar tar)
+          fi
     - checkout:
         path: src/electron
     - restore_cache:
         paths:
           - ~/.gclient-cache
         keys:
-          - v1-gclient-cache-{{ arch }}-{{ checksum "src/electron/DEPS" }}
-          - v1-gclient-cache-{{ arch }}-
+          - v2-gclient-cache-{{ arch }}-{{ checksum "src/electron/DEPS" }}
+          - v2-gclient-cache-{{ arch }}-
     - run:
         name: Gclient sync
         command: |
@@ -175,7 +184,7 @@ gn-build-steps: &gn-build-steps
     - save_cache:
         paths:
           - ~/.gclient-cache
-        key: v1-gclient-cache-{{ arch }}-{{ checksum "src/electron/DEPS" }}
+        key: v2-gclient-cache-{{ arch }}-{{ checksum "src/electron/DEPS" }}
     - run:
         name: GN gen
         command: |
@@ -196,7 +205,9 @@ gn-build-steps: &gn-build-steps
     - run:
         name: Setup for headless testing
         command: |
-          sh -e /etc/init.d/xvfb start
+          if [ "$(uname)" = "Linux" ]; then
+            sh -e /etc/init.d/xvfb start
+          fi
     - run:
         name: Test
         environment:
@@ -208,7 +219,12 @@ gn-build-steps: &gn-build-steps
           ninja -C out/Default electron/build/node:headers
           export npm_config_nodedir="$PWD/out/Default/gen/node_headers"
           (cd electron/spec && npm install)
-          ./out/Default/electron electron/spec --ci --enable-logging
+          if [ "$(uname)" = "Darwin" ]; then
+            ELECTRON_EXE="./out/Default/Electron.app/Contents/MacOS/Electron"
+          else
+            ELECTRON_EXE="./out/Default/electron"
+          fi
+          "$ELECTRON_EXE" electron/spec --ci --enable-logging
     - store_test_results:
         path: src/junit
     - store_artifacts:
@@ -398,36 +414,56 @@ jobs:
     resource_class: 2xlarge
     <<: *gn-build-steps
 
+  electron-gn-osx-debug-fyi:
+    environment:
+      GN_CONFIG: //electron/build/args/debug.gn
+      INSTALL_MACOS_NODE: true
+    macos:
+      xcode: "8.3.3"
+    <<: *gn-build-steps
+
+  electron-gn-osx-release-fyi:
+    environment:
+      GN_CONFIG: //electron/build/args/release.gn
+      INSTALL_MACOS_NODE: true
+    macos:
+      xcode: "8.3.3"
+    <<: *gn-build-steps
+
 workflows:
   version: 2
-  build-arm:
+#  build-arm:
+#    jobs:
+#      - electron-linux-arm
+#      - electron-linux-arm-test:
+#          requires:
+#            - electron-linux-arm
+#  build-arm64:
+#    jobs:
+#      - electron-linux-arm64
+#      - electron-linux-arm64-test:
+#          requires:
+#            - electron-linux-arm64
+#  build-ia32:
+#    jobs:
+#      - electron-linux-ia32
+#  build-x64:
+#    jobs:
+#      - electron-linux-x64
+#  build-osx-x64:
+#    jobs:
+#      - electron-osx-x64
+#  build-mas-x64:
+#    jobs:
+#      - electron-mas-x64
+#  build-gn-linux:
+#    jobs:
+#      - electron-gn-linux-debug-fyi
+#      - electron-gn-linux-release-fyi
+  build-gn-osx:
     jobs:
-      - electron-linux-arm
-      - electron-linux-arm-test:
-          requires:
-            - electron-linux-arm
-  build-arm64:
-    jobs:
-      - electron-linux-arm64
-      - electron-linux-arm64-test:
-          requires:
-            - electron-linux-arm64
-  build-ia32:
-    jobs:
-      - electron-linux-ia32
-  build-x64:
-    jobs:
-      - electron-linux-x64
-  build-osx-x64:
-    jobs:
-      - electron-osx-x64
-  build-mas-x64:
-    jobs:
-      - electron-mas-x64
-  build-gn-linux:
-    jobs:
-      - electron-gn-linux-debug-fyi
-      - electron-gn-linux-release-fyi
+      - electron-gn-osx-debug-fyi
+      - electron-gn-osx-release-fyi
 
   nightly-release-test:
     triggers:
