@@ -161,7 +161,8 @@ gn-build-steps: &gn-build-steps
             echo 'Installing Node.js 10 for MacOS'
             brew update
             brew install node@10
-            (cd /usr/local/bin; ln -sf gtar tar)
+            brew install gnu-tar
+            ln -sf "$(which gtar)" "$(which tar)"
           fi
     - checkout:
         path: src/electron
@@ -169,8 +170,8 @@ gn-build-steps: &gn-build-steps
         paths:
           - ~/.gclient-cache
         keys:
-          - v2-gclient-cache-{{ arch }}-{{ checksum "src/electron/DEPS" }}
-          - v2-gclient-cache-{{ arch }}-
+          - v3-gclient-cache-{{ arch }}-{{ checksum "src/electron/DEPS" }}
+          - v3-gclient-cache-{{ arch }}-
     - run:
         name: Gclient sync
         command: |
@@ -184,7 +185,7 @@ gn-build-steps: &gn-build-steps
     - save_cache:
         paths:
           - ~/.gclient-cache
-        key: v2-gclient-cache-{{ arch }}-{{ checksum "src/electron/DEPS" }}
+        key: v3-gclient-cache-{{ arch }}-{{ checksum "src/electron/DEPS" }}
     - run:
         name: GN gen
         command: |
