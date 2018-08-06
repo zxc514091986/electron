@@ -21,7 +21,7 @@ class RendererClientBase : public content::ContentRendererClient {
   ~RendererClientBase() override;
 
   virtual void DidCreateScriptContext(v8::Handle<v8::Context> context,
-                                      content::RenderFrame* render_frame);
+                                      content::RenderFrame* render_frame) = 0;
   virtual void WillReleaseScriptContext(v8::Handle<v8::Context> context,
                                         content::RenderFrame* render_frame) = 0;
   virtual void DidClearWindowObject(content::RenderFrame* render_frame);
@@ -59,7 +59,7 @@ class RendererClientBase : public content::ContentRendererClient {
   bool isolated_world_;
 
   // An increasing ID used for indentifying an V8 context in this process.
-  int next_context_id_ = 0;
+  // int next_context_id_ = 0;
 };
 
 }  // namespace atom
