@@ -47,6 +47,7 @@ app.once('ready', () => {
       client.once('end', () => {
         app.exit(0)
       })
+      console.log('Calling end with: ', JSON.stringify(argv))
       client.end(JSON.stringify(argv))
     }
   }
@@ -54,17 +55,20 @@ app.once('ready', () => {
   const socketPath = process.platform === 'win32' ? '\\\\.\\pipe\\electron-mixed-sandbox' : '/tmp/electron-mixed-sandbox'
   const client = net.connect(socketPath, () => {
     connected = true
+    console.log('Calling finish from socket connection')
     finish()
   })
 
   noSandboxWindow.webContents.once('devtools-opened', () => {
     argv.noSandboxDevtools = true
+    console.log('Calling finish from noSandboxWindow devtools-opened')
     finish()
   })
   noSandboxWindow.webContents.openDevTools()
 
   sandboxWindow.webContents.once('devtools-opened', () => {
     argv.sandboxDevtools = true
+    console.log('Calling finish from sandboxWindow devtools-opened')
     finish()
   })
   sandboxWindow.webContents.openDevTools()
@@ -72,8 +76,10 @@ app.once('ready', () => {
   ipcMain.on('argv', (event, value) => {
     if (event.sender === sandboxWindow.webContents) {
       argv.sandbox = value
+      console.log('Calling finish from sandboxWindow IPC')
     } else if (event.sender === noSandboxWindow.webContents) {
       argv.noSandbox = value
+      console.log('Calling finish from noSandboxWindow IPC')
     }
     finish()
   })

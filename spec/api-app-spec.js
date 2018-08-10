@@ -867,12 +867,28 @@ describe('app module', () => {
       it('adds --enable-sandbox to render processes created with sandbox: true', done => {
         const appPath = path.join(__dirname, 'fixtures', 'api', 'mixed-sandbox-app')
         appProcess = ChildProcess.spawn(remote.process.execPath, [appPath])
+        appProcess.stdout.on('data', (data) => {
+          console.log(`stdout: ${data}`)
+        })
 
-        server.once('error', error => { done(error) })
+        appProcess.stderr.on('data', (data) => {
+          console.log(`stderr: ${data}`)
+        })
+
+        appProcess.on('close', (code) => {
+          console.log(`child process exited with code ${code}`)
+        })
+
+        server.once('error', error => {
+          console.log('Error in server', error)
+          done(error)
+        })
 
         server.on('connection', client => {
+          console.log('Got connection for app.enableMixedSandbox() is called')
           client.once('data', data => {
             const argv = JSON.parse(data)
+            console.log('Got data for app.enableMixedSandbox() is called', argv)
             expect(argv.sandbox).to.include('--enable-sandbox')
             expect(argv.sandbox).to.not.include('--no-sandbox')
 
@@ -889,12 +905,25 @@ describe('app module', () => {
       it('adds --enable-sandbox to render processes created with sandbox: true', done => {
         const appPath = path.join(__dirname, 'fixtures', 'api', 'mixed-sandbox-app')
         appProcess = ChildProcess.spawn(remote.process.execPath, [appPath, '--enable-mixed-sandbox'])
+        appProcess.stdout.on('data', (data) => {
+          console.log(`stdout: ${data}`)
+        })
+
+        appProcess.stderr.on('data', (data) => {
+          console.log(`stderr: ${data}`)
+        })
+
+        appProcess.on('close', (code) => {
+          console.log(`child process exited with code ${code}`)
+        })
 
         server.once('error', error => { done(error) })
 
         server.on('connection', client => {
+          console.log('Got connection for --enable-mixed-sandbox')
           client.once('data', data => {
             const argv = JSON.parse(data)
+            console.log('Got data for --enable-mixed-sandbox', argv)
             expect(argv.sandbox).to.include('--enable-sandbox')
             expect(argv.sandbox).to.not.include('--no-sandbox')
 
