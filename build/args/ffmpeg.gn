@@ -1,0 +1,4 @@
+import("all.gn")
+
+ffmpeg_branding = "Chromium"
+proprietary_codecs = false
