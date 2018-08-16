@@ -1,4 +1,4 @@
-import("all.gn")
+import("release.gn")
 
 ffmpeg_branding = "Chromium"
 proprietary_codecs = false
