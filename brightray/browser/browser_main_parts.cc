@@ -170,12 +170,13 @@ BrowserMainParts::BrowserMainParts() {}
 BrowserMainParts::~BrowserMainParts() {}
 
 #if defined(OS_WIN) || defined(OS_LINUX)
+// Only override the path if a previous path has been set for Logs
 void OverrideAppLogsPath() {
   base::FilePath path;
   if (PathService::Get(brightray::DIR_APP_DATA, &path)) {
-    path = path.Append(base::FilePath::FromUTF8Unsafe(GetApplicationName()));
+    path = path.Append(base::FilePath::FromUTF8Unsafe(ATOM_PROJECT_NAME));
     path = path.Append(base::FilePath::FromUTF8Unsafe("logs"));
-    PathService::Override(DIR_APP_LOGS, path);
+    PathService::OverrideAndCreateIfNeeded(DIR_APP_LOGS, path, false, false);
   }
 }
 #endif

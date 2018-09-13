@@ -6,6 +6,7 @@
 
 namespace brightray {
 
+// Only override the path if a previous path has been set for Logs
 void BrowserMainParts::OverrideAppLogsPath() {
   base::FilePath path;
   NSString* bundleName =
@@ -15,7 +16,7 @@ void BrowserMainParts::OverrideAppLogsPath() {
   NSString* libraryPath =
       [NSHomeDirectory() stringByAppendingPathComponent:logsPath];
 
-  PathService::Override(DIR_APP_LOGS, base::FilePath([libraryPath UTF8String]));
+  PathService::OverrideAndCreateIfNeeded(DIR_APP_LOGS, base::FilePath([libraryPath UTF8String]), false, false);
 }
 
 // Replicates NSApplicationMain, but doesn't start a run loop.
