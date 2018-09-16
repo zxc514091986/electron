@@ -4,6 +4,7 @@
   "repository": "https://github.com/electron/electron",
   "description": "Build cross platform desktop apps with JavaScript, HTML, and CSS",
   "devDependencies": {
+    "@jest-runner/electron": "0.0.6",
     "asar": "^0.11.0",
     "browserify": "^13.1.0",
     "check-for-leaks": "^1.0.2",
@@ -21,6 +22,7 @@
     "github": "^9.2.0",
     "html-entities": "^1.2.1",
     "husky": "^0.14.3",
+    "jest": "^23.6.0",
     "lint": "^1.1.2",
     "minimist": "^1.2.0",
     "node-fetch": "^2.1.2",

@@ -1,10 +1,8 @@
-const assert = require('assert')
 const ChildProcess = require('child_process')
-const { expect } = require('chai')
 const fs = require('fs')
 const path = require('path')
 const util = require('util')
-const { closeWindow } = require('./window-helpers')
+const { closeWindow } = require('./helpers/window-helpers')
 
 const nativeImage = require('electron').nativeImage
 const remote = require('electron').remote
@@ -13,12 +11,12 @@ const ipcMain = remote.require('electron').ipcMain
 const BrowserWindow = remote.require('electron').BrowserWindow
 
 describe('asar package', function () {
-  var fixtures = path.join(__dirname, 'fixtures')
+  const fixtures = path.join(__dirname, '../spec', 'fixtures')
 
   describe('node api', function () {
     it('supports paths specified as a Buffer', function () {
       var file = Buffer.from(path.join(fixtures, 'asar', 'a.asar', 'file1'))
-      assert.strictEqual(fs.existsSync(file), true)
+      expect(fs.existsSync(file)).toStrictEqual(true)
     })
 
     describe('fs.readFileSync', function () {
@@ -32,30 +30,30 @@ describe('asar package', function () {
 
       it('reads a normal file', function () {
         var file1 = path.join(fixtures, 'asar', 'a.asar', 'file1')
-        assert.strictEqual(fs.readFileSync(file1).toString().trim(), 'file1')
+        expect(fs.readFileSync(file1).toString().trim()).toStrictEqual('file1')
         var file2 = path.join(fixtures, 'asar', 'a.asar', 'file2')
-        assert.strictEqual(fs.readFileSync(file2).toString().trim(), 'file2')
+        expect(fs.readFileSync(file2).toString().trim()).toStrictEqual('file2')
         var file3 = path.join(fixtures, 'asar', 'a.asar', 'file3')
-        assert.strictEqual(fs.readFileSync(file3).toString().trim(), 'file3')
+        expect(fs.readFileSync(file3).toString().trim()).toStrictEqual('file3')
       })
 
       it('reads from a empty file', function () {
         var file = path.join(fixtures, 'asar', 'empty.asar', 'file1')
         var buffer = fs.readFileSync(file)
-        assert.strictEqual(buffer.length, 0)
-        assert.strictEqual(buffer.toString(), '')
+        expect(buffer.length).toStrictEqual(0)
+        expect(buffer.toString()).toStrictEqual('')
       })
 
       it('reads a linked file', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'link1')
-        assert.strictEqual(fs.readFileSync(p).toString().trim(), 'file1')
+        expect(fs.readFileSync(p).toString().trim()).toStrictEqual('file1')
       })
 
       it('reads a file from linked directory', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'link2', 'file1')
-        assert.strictEqual(fs.readFileSync(p).toString().trim(), 'file1')
+        expect(fs.readFileSync(p).toString().trim()).toStrictEqual('file1')
         p = path.join(fixtures, 'asar', 'a.asar', 'link2', 'link2', 'file1')
-        assert.strictEqual(fs.readFileSync(p).toString().trim(), 'file1')
+        expect(fs.readFileSync(p).toString().trim()).toStrictEqual('file1')
       })
 
       it('throws ENOENT error when can not find file', function () {
@@ -63,22 +61,22 @@ describe('asar package', function () {
         var throws = function () {
           fs.readFileSync(p)
         }
-        assert.throws(throws, /ENOENT/)
+        expect(throws).toThrow(/ENOENT/)
       })
 
       it('passes ENOENT error to callback when can not find file', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
         var async = false
         fs.readFile(p, function (e) {
-          assert(async)
-          assert(/ENOENT/.test(e))
+          expect(async).toBeTruthy()
+          expect(/ENOENT/.test(e)).toBeTruthy()
         })
         async = true
       })
 
       it('reads a normal file with unpacked files', function () {
         var p = path.join(fixtures, 'asar', 'unpack.asar', 'a.txt')
-        assert.strictEqual(fs.readFileSync(p).toString().trim(), 'a')
+        expect(fs.readFileSync(p).toString().trim()).toStrictEqual('a')
       })
     })
 
@@ -86,8 +84,8 @@ describe('asar package', function () {
       it('reads a normal file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'file1')
         fs.readFile(p, function (err, content) {
-          assert.strictEqual(err, null)
-          assert.strictEqual(String(content).trim(), 'file1')
+          expect(err).toStrictEqual(null)
+          expect(String(content).trim()).toStrictEqual('file1')
           done()
         })
       })
@@ -95,8 +93,8 @@ describe('asar package', function () {
       it('reads from a empty file', function (done) {
         var p = path.join(fixtures, 'asar', 'empty.asar', 'file1')
         fs.readFile(p, function (err, content) {
-          assert.strictEqual(err, null)
-          assert.strictEqual(String(content), '')
+          expect(err).toStrictEqual(null)
+          expect(String(content)).toStrictEqual('')
           done()
         })
       })
@@ -104,8 +102,8 @@ describe('asar package', function () {
       it('reads from a empty file with encoding', function (done) {
         var p = path.join(fixtures, 'asar', 'empty.asar', 'file1')
         fs.readFile(p, 'utf8', function (err, content) {
-          assert.strictEqual(err, null)
-          assert.strictEqual(content, '')
+          expect(err).toStrictEqual(null)
+          expect(content).toStrictEqual('')
           done()
         })
       })
@@ -113,8 +111,8 @@ describe('asar package', function () {
       it('reads a linked file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'link1')
         fs.readFile(p, function (err, content) {
-          assert.strictEqual(err, null)
-          assert.strictEqual(String(content).trim(), 'file1')
+          expect(err).toStrictEqual(null)
+          expect(String(content).trim()).toStrictEqual('file1')
           done()
         })
       })
@@ -122,8 +120,8 @@ describe('asar package', function () {
       it('reads a file from linked directory', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'link2', 'link2', 'file1')
         fs.readFile(p, function (err, content) {
-          assert.strictEqual(err, null)
-          assert.strictEqual(String(content).trim(), 'file1')
+          expect(err).toStrictEqual(null)
+          expect(String(content).trim()).toStrictEqual('file1')
           done()
         })
       })
@@ -131,7 +129,7 @@ describe('asar package', function () {
       it('throws ENOENT error when can not find file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
         fs.readFile(p, function (err) {
-          assert.strictEqual(err.code, 'ENOENT')
+          expect(err.code).toStrictEqual('ENOENT')
           done()
         })
       })
@@ -147,10 +145,10 @@ describe('asar package', function () {
       it('returns information of root', function () {
         var p = path.join(fixtures, 'asar', 'a.asar')
         var stats = fs.lstatSync(p)
-        assert.strictEqual(stats.isFile(), false)
-        assert.strictEqual(stats.isDirectory(), true)
-        assert.strictEqual(stats.isSymbolicLink(), false)
-        assert.strictEqual(stats.size, 0)
+        expect(stats.isFile()).toStrictEqual(false)
+        expect(stats.isDirectory()).toStrictEqual(true)
+        expect(stats.isSymbolicLink()).toStrictEqual(false)
+        expect(stats.size).toStrictEqual(0)
       })
 
       it('returns information of a normal file', function () {
@@ -160,10 +158,10 @@ describe('asar package', function () {
           file = ref2[j]
           p = path.join(fixtures, 'asar', 'a.asar', file)
           stats = fs.lstatSync(p)
-          assert.strictEqual(stats.isFile(), true)
-          assert.strictEqual(stats.isDirectory(), false)
-          assert.strictEqual(stats.isSymbolicLink(), false)
-          assert.strictEqual(stats.size, 6)
+          expect(stats.isFile()).toStrictEqual(true)
+          expect(stats.isDirectory()).toStrictEqual(false)
+          expect(stats.isSymbolicLink()).toStrictEqual(false)
+          expect(stats.size).toStrictEqual(6)
         }
       })
 
@@ -174,10 +172,10 @@ describe('asar package', function () {
           file = ref2[j]
           p = path.join(fixtures, 'asar', 'a.asar', file)
           stats = fs.lstatSync(p)
-          assert.strictEqual(stats.isFile(), false)
-          assert.strictEqual(stats.isDirectory(), true)
-          assert.strictEqual(stats.isSymbolicLink(), false)
-          assert.strictEqual(stats.size, 0)
+          expect(stats.isFile()).toStrictEqual(false)
+          expect(stats.isDirectory()).toStrictEqual(true)
+          expect(stats.isSymbolicLink()).toStrictEqual(false)
+          expect(stats.size).toStrictEqual(0)
         }
       })
 
@@ -188,10 +186,10 @@ describe('asar package', function () {
           file = ref2[j]
           p = path.join(fixtures, 'asar', 'a.asar', file)
           stats = fs.lstatSync(p)
-          assert.strictEqual(stats.isFile(), false)
-          assert.strictEqual(stats.isDirectory(), false)
-          assert.strictEqual(stats.isSymbolicLink(), true)
-          assert.strictEqual(stats.size, 0)
+          expect(stats.isFile()).toStrictEqual(false)
+          expect(stats.isDirectory()).toStrictEqual(false)
+          expect(stats.isSymbolicLink()).toStrictEqual(true)
+          expect(stats.size).toStrictEqual(0)
         }
       })
 
@@ -202,10 +200,10 @@ describe('asar package', function () {
           file = ref2[j]
           p = path.join(fixtures, 'asar', 'a.asar', file)
           stats = fs.lstatSync(p)
-          assert.strictEqual(stats.isFile(), false)
-          assert.strictEqual(stats.isDirectory(), false)
-          assert.strictEqual(stats.isSymbolicLink(), true)
-          assert.strictEqual(stats.size, 0)
+          expect(stats.isFile()).toStrictEqual(false)
+          expect(stats.isDirectory()).toStrictEqual(false)
+          expect(stats.isSymbolicLink()).toStrictEqual(true)
+          expect(stats.size).toStrictEqual(0)
         }
       })
 
@@ -218,7 +216,7 @@ describe('asar package', function () {
           throws = function () {
             fs.lstatSync(p)
           }
-          assert.throws(throws, /ENOENT/)
+          expect(throws).toThrow(/ENOENT/)
         }
       })
     })
@@ -232,11 +230,11 @@ describe('asar package', function () {
       it('returns information of root', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar')
         fs.lstat(p, function (err, stats) {
-          assert.strictEqual(err, null)
-          assert.strictEqual(stats.isFile(), false)
-          assert.strictEqual(stats.isDirectory(), true)
-          assert.strictEqual(stats.isSymbolicLink(), false)
-          assert.strictEqual(stats.size, 0)
+          expect(err).toStrictEqual(null)
+          expect(stats.isFile()).toStrictEqual(false)
+          expect(stats.isDirectory()).toStrictEqual(true)
+          expect(stats.isSymbolicLink()).toStrictEqual(false)
+          expect(stats.size).toStrictEqual(0)
           done()
         })
       })
@@ -244,11 +242,11 @@ describe('asar package', function () {
       it('returns information of a normal file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'link2', 'file1')
         fs.lstat(p, function (err, stats) {
-          assert.strictEqual(err, null)
-          assert.strictEqual(stats.isFile(), true)
-          assert.strictEqual(stats.isDirectory(), false)
-          assert.strictEqual(stats.isSymbolicLink(), false)
-          assert.strictEqual(stats.size, 6)
+          expect(err).toStrictEqual(null)
+          expect(stats.isFile()).toStrictEqual(true)
+          expect(stats.isDirectory()).toStrictEqual(false)
+          expect(stats.isSymbolicLink()).toStrictEqual(false)
+          expect(stats.size).toStrictEqual(6)
           done()
         })
       })
@@ -256,11 +254,11 @@ describe('asar package', function () {
       it('returns information of a normal directory', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'dir1')
         fs.lstat(p, function (err, stats) {
-          assert.strictEqual(err, null)
-          assert.strictEqual(stats.isFile(), false)
-          assert.strictEqual(stats.isDirectory(), true)
-          assert.strictEqual(stats.isSymbolicLink(), false)
-          assert.strictEqual(stats.size, 0)
+          expect(err).toStrictEqual(null)
+          expect(stats.isFile()).toStrictEqual(false)
+          expect(stats.isDirectory()).toStrictEqual(true)
+          expect(stats.isSymbolicLink()).toStrictEqual(false)
+          expect(stats.size).toStrictEqual(0)
           done()
         })
       })
@@ -268,11 +266,11 @@ describe('asar package', function () {
       it('returns information of a linked file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'link2', 'link1')
         fs.lstat(p, function (err, stats) {
-          assert.strictEqual(err, null)
-          assert.strictEqual(stats.isFile(), false)
-          assert.strictEqual(stats.isDirectory(), false)
-          assert.strictEqual(stats.isSymbolicLink(), true)
-          assert.strictEqual(stats.size, 0)
+          expect(err).toStrictEqual(null)
+          expect(stats.isFile()).toStrictEqual(false)
+          expect(stats.isDirectory()).toStrictEqual(false)
+          expect(stats.isSymbolicLink()).toStrictEqual(true)
+          expect(stats.size).toStrictEqual(0)
           done()
         })
       })
@@ -280,11 +278,11 @@ describe('asar package', function () {
       it('returns information of a linked directory', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'link2', 'link2')
         fs.lstat(p, function (err, stats) {
-          assert.strictEqual(err, null)
-          assert.strictEqual(stats.isFile(), false)
-          assert.strictEqual(stats.isDirectory(), false)
-          assert.strictEqual(stats.isSymbolicLink(), true)
-          assert.strictEqual(stats.size, 0)
+          expect(err).toStrictEqual(null)
+          expect(stats.isFile()).toStrictEqual(false)
+          expect(stats.isDirectory()).toStrictEqual(false)
+          expect(stats.isSymbolicLink()).toStrictEqual(true)
+          expect(stats.size).toStrictEqual(0)
           done()
         })
       })
@@ -292,7 +290,7 @@ describe('asar package', function () {
       it('throws ENOENT error when can not find file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'file4')
         fs.lstat(p, function (err) {
-          assert.strictEqual(err.code, 'ENOENT')
+          expect(err.code).toStrictEqual('ENOENT')
           done()
         })
       })
@@ -303,49 +301,49 @@ describe('asar package', function () {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = 'a.asar'
         const r = fs.realpathSync(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, p))
+        expect(r).toStrictEqual(path.join(parent, p))
       })
 
       it('returns real path of a normal file', () => {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'file1')
         const r = fs.realpathSync(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, p))
+        expect(r).toStrictEqual(path.join(parent, p))
       })
 
       it('returns real path of a normal directory', () => {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'dir1')
         const r = fs.realpathSync(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, p))
+        expect(r).toStrictEqual(path.join(parent, p))
       })
 
       it('returns real path of a linked file', () => {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'link2', 'link1')
         const r = fs.realpathSync(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, 'a.asar', 'file1'))
+        expect(r).toStrictEqual(path.join(parent, 'a.asar', 'file1'))
       })
 
       it('returns real path of a linked directory', () => {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'link2', 'link2')
         const r = fs.realpathSync(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, 'a.asar', 'dir1'))
+        expect(r).toStrictEqual(path.join(parent, 'a.asar', 'dir1'))
       })
 
       it('returns real path of an unpacked file', () => {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('unpack.asar', 'a.txt')
         const r = fs.realpathSync(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, p))
+        expect(r).toStrictEqual(path.join(parent, p))
       })
 
       it('throws ENOENT error when can not find file', () => {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'not-exist')
         const throws = () => fs.realpathSync(path.join(parent, p))
-        assert.throws(throws, /ENOENT/)
+        expect(throws).toThrow(/ENOENT/)
       })
     })
 
@@ -354,49 +352,49 @@ describe('asar package', function () {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = 'a.asar'
         const r = fs.realpathSync.native(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, p))
+        expect(r).toStrictEqual(path.join(parent, p))
       })
 
       it('returns real path of a normal file', () => {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'file1')
         const r = fs.realpathSync.native(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, p))
+        expect(r).toStrictEqual(path.join(parent, p))
       })
 
       it('returns real path of a normal directory', () => {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'dir1')
         const r = fs.realpathSync.native(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, p))
+        expect(r).toStrictEqual(path.join(parent, p))
       })
 
       it('returns real path of a linked file', () => {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'link2', 'link1')
         const r = fs.realpathSync.native(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, 'a.asar', 'file1'))
+        expect(r).toStrictEqual(path.join(parent, 'a.asar', 'file1'))
       })
 
       it('returns real path of a linked directory', () => {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'link2', 'link2')
         const r = fs.realpathSync.native(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, 'a.asar', 'dir1'))
+        expect(r).toStrictEqual(path.join(parent, 'a.asar', 'dir1'))
       })
 
       it('returns real path of an unpacked file', () => {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('unpack.asar', 'a.txt')
         const r = fs.realpathSync.native(path.join(parent, p))
-        assert.strictEqual(r, path.join(parent, p))
+        expect(r).toStrictEqual(path.join(parent, p))
       })
 
       it('throws ENOENT error when can not find file', () => {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'not-exist')
         const throws = () => fs.realpathSync.native(path.join(parent, p))
-        assert.throws(throws, /ENOENT/)
+        expect(throws).toThrow(/ENOENT/)
       })
     })
 
@@ -405,8 +403,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = 'a.asar'
         fs.realpath(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, p))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, p))
           done()
         })
       })
@@ -415,8 +413,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'file1')
         fs.realpath(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, p))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, p))
           done()
         })
       })
@@ -425,8 +423,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'dir1')
         fs.realpath(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, p))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, p))
           done()
         })
       })
@@ -435,8 +433,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'link2', 'link1')
         fs.realpath(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, 'a.asar', 'file1'))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, 'a.asar', 'file1'))
           done()
         })
       })
@@ -445,8 +443,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'link2', 'link2')
         fs.realpath(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, 'a.asar', 'dir1'))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, 'a.asar', 'dir1'))
           done()
         })
       })
@@ -455,8 +453,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('unpack.asar', 'a.txt')
         fs.realpath(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, p))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, p))
           done()
         })
       })
@@ -465,7 +463,7 @@ describe('asar package', function () {
         const parent = fs.realpathSync(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'not-exist')
         fs.realpath(path.join(parent, p), err => {
-          assert.strictEqual(err.code, 'ENOENT')
+          expect(err.code).toStrictEqual('ENOENT')
           done()
         })
       })
@@ -476,8 +474,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = 'a.asar'
         fs.realpath.native(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, p))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, p))
           done()
         })
       })
@@ -486,8 +484,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'file1')
         fs.realpath.native(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, p))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, p))
           done()
         })
       })
@@ -496,8 +494,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'dir1')
         fs.realpath.native(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, p))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, p))
           done()
         })
       })
@@ -506,8 +504,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'link2', 'link1')
         fs.realpath.native(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, 'a.asar', 'file1'))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, 'a.asar', 'file1'))
           done()
         })
       })
@@ -516,8 +514,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'link2', 'link2')
         fs.realpath.native(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, 'a.asar', 'dir1'))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, 'a.asar', 'dir1'))
           done()
         })
       })
@@ -526,8 +524,8 @@ describe('asar package', function () {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('unpack.asar', 'a.txt')
         fs.realpath.native(path.join(parent, p), (err, r) => {
-          assert.strictEqual(err, null)
-          assert.strictEqual(r, path.join(parent, p))
+          expect(err).toStrictEqual(null)
+          expect(r).toStrictEqual(path.join(parent, p))
           done()
         })
       })
@@ -536,7 +534,7 @@ describe('asar package', function () {
         const parent = fs.realpathSync.native(path.join(fixtures, 'asar'))
         const p = path.join('a.asar', 'not-exist')
         fs.realpath.native(path.join(parent, p), err => {
-          assert.strictEqual(err.code, 'ENOENT')
+          expect(err.code).toStrictEqual('ENOENT')
           done()
         })
       })
@@ -546,19 +544,19 @@ describe('asar package', function () {
       it('reads dirs from root', function () {
         var p = path.join(fixtures, 'asar', 'a.asar')
         var dirs = fs.readdirSync(p)
-        assert.deepStrictEqual(dirs, ['dir1', 'dir2', 'dir3', 'file1', 'file2', 'file3', 'link1', 'link2', 'ping.js'])
+        expect(dirs).toStrictEqual(['dir1', 'dir2', 'dir3', 'file1', 'file2', 'file3', 'link1', 'link2', 'ping.js'])
       })
 
       it('reads dirs from a normal dir', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'dir1')
         var dirs = fs.readdirSync(p)
-        assert.deepStrictEqual(dirs, ['file1', 'file2', 'file3', 'link1', 'link2'])
+        expect(dirs).toStrictEqual(['file1', 'file2', 'file3', 'link1', 'link2'])
       })
 
       it('reads dirs from a linked dir', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'link2', 'link2')
         var dirs = fs.readdirSync(p)
-        assert.deepStrictEqual(dirs, ['file1', 'file2', 'file3', 'link1', 'link2'])
+        expect(dirs).toStrictEqual(['file1', 'file2', 'file3', 'link1', 'link2'])
       })
 
       it('throws ENOENT error when can not find file', function () {
@@ -566,7 +564,7 @@ describe('asar package', function () {
         var throws = function () {
           fs.readdirSync(p)
         }
-        assert.throws(throws, /ENOENT/)
+        expect(throws).toThrow(/ENOENT/)
       })
     })
 
@@ -574,8 +572,8 @@ describe('asar package', function () {
       it('reads dirs from root', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar')
         fs.readdir(p, function (err, dirs) {
-          assert.strictEqual(err, null)
-          assert.deepStrictEqual(dirs, ['dir1', 'dir2', 'dir3', 'file1', 'file2', 'file3', 'link1', 'link2', 'ping.js'])
+          expect(err).toStrictEqual(null)
+          expect(dirs).toStrictEqual(['dir1', 'dir2', 'dir3', 'file1', 'file2', 'file3', 'link1', 'link2', 'ping.js'])
           done()
         })
       })
@@ -583,16 +581,16 @@ describe('asar package', function () {
       it('reads dirs from a normal dir', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'dir1')
         fs.readdir(p, function (err, dirs) {
-          assert.strictEqual(err, null)
-          assert.deepStrictEqual(dirs, ['file1', 'file2', 'file3', 'link1', 'link2'])
+          expect(err).toStrictEqual(null)
+          expect(dirs).toStrictEqual(['file1', 'file2', 'file3', 'link1', 'link2'])
           done()
         })
       })
       it('reads dirs from a linked dir', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'link2', 'link2')
         fs.readdir(p, function (err, dirs) {
-          assert.strictEqual(err, null)
-          assert.deepStrictEqual(dirs, ['file1', 'file2', 'file3', 'link1', 'link2'])
+          expect(err).toStrictEqual(null)
+          expect(dirs).toStrictEqual(['file1', 'file2', 'file3', 'link1', 'link2'])
           done()
         })
       })
@@ -600,7 +598,7 @@ describe('asar package', function () {
       it('throws ENOENT error when can not find file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
         fs.readdir(p, function (err) {
-          assert.strictEqual(err.code, 'ENOENT')
+          expect(err.code).toStrictEqual('ENOENT')
           done()
         })
       })
@@ -616,7 +614,7 @@ describe('asar package', function () {
           fd = fs.openSync(p, 'r')
           buffer = Buffer.alloc(6)
           fs.readSync(fd, buffer, 0, 6, 0)
-          assert.strictEqual(String(buffer).trim(), 'file1')
+          expect(String(buffer).trim()).toStrictEqual('file1')
           fs.closeSync(fd)
         }
       })
@@ -626,7 +624,7 @@ describe('asar package', function () {
         var throws = function () {
           fs.openSync(p)
         }
-        assert.throws(throws, /ENOENT/)
+        expect(throws).toThrow(/ENOENT/)
       })
     })
 
@@ -634,11 +632,11 @@ describe('asar package', function () {
       it('opens a normal file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'file1')
         fs.open(p, 'r', function (err, fd) {
-          assert.strictEqual(err, null)
+          expect(err).toStrictEqual(null)
           var buffer = Buffer.alloc(6)
           fs.read(fd, buffer, 0, 6, 0, function (err) {
-            assert.strictEqual(err, null)
-            assert.strictEqual(String(buffer).trim(), 'file1')
+            expect(err).toStrictEqual(null)
+            expect(String(buffer).trim()).toStrictEqual('file1')
             fs.close(fd, done)
           })
         })
@@ -647,7 +645,7 @@ describe('asar package', function () {
       it('throws ENOENT error when can not find file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
         fs.open(p, 'r', function (err) {
-          assert.strictEqual(err.code, 'ENOENT')
+          expect(err.code).toStrictEqual('ENOENT')
           done()
         })
       })
@@ -657,7 +655,7 @@ describe('asar package', function () {
       it('throws error when calling inside asar archive', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
         fs.mkdir(p, function (err) {
-          assert.strictEqual(err.code, 'ENOTDIR')
+          expect(err.code).toStrictEqual('ENOTDIR')
           done()
         })
       })
@@ -666,9 +664,9 @@ describe('asar package', function () {
     describe('fs.mkdirSync', function () {
       it('throws error when calling inside asar archive', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
-        assert.throws(function () {
+        expect(function () {
           fs.mkdirSync(p)
-        }, new RegExp('ENOTDIR'))
+        }).toThrow(/ENOTDIR/)
       })
     })
 
@@ -677,7 +675,7 @@ describe('asar package', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'file1')
         // eslint-disable-next-line
         fs.exists(p, function (exists) {
-          assert.strictEqual(exists, true)
+          expect(exists).toStrictEqual(true)
           done()
         })
       })
@@ -686,7 +684,7 @@ describe('asar package', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
         // eslint-disable-next-line
         fs.exists(p, function (exists) {
-          assert.strictEqual(exists, false)
+          expect(exists).toStrictEqual(false)
           done()
         })
       })
@@ -695,7 +693,7 @@ describe('asar package', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'file1')
         // eslint-disable-next-line
         util.promisify(fs.exists)(p).then(exists => {
-          assert.strictEqual(exists, true)
+          expect(exists).toStrictEqual(true)
           done()
         })
       })
@@ -704,7 +702,7 @@ describe('asar package', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
         // eslint-disable-next-line
         util.promisify(fs.exists)(p).then(exists => {
-          assert.strictEqual(exists, false)
+          expect(exists).toStrictEqual(false)
           done()
         })
       })
@@ -713,16 +711,16 @@ describe('asar package', function () {
     describe('fs.existsSync', function () {
       it('handles an existing file', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'file1')
-        assert.doesNotThrow(function () {
-          assert.strictEqual(fs.existsSync(p), true)
-        })
+        expect(function () {
+          expect(fs.existsSync(p)).toStrictEqual(true)
+        }).not.toThrow()
       })
 
       it('handles a non-existent file', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
-        assert.doesNotThrow(function () {
-          assert.strictEqual(fs.existsSync(p), false)
-        })
+        expect(function () {
+          expect(fs.existsSync(p)).toStrictEqual(false)
+        }).not.toThrow()
       })
     })
 
@@ -730,7 +728,7 @@ describe('asar package', function () {
       it('accesses a normal file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'file1')
         fs.access(p, function (err) {
-          assert(err == null)
+          expect(err).toBeFalsy()
           done()
         })
       })
@@ -738,7 +736,7 @@ describe('asar package', function () {
       it('throws an error when called with write mode', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'file1')
         fs.access(p, fs.constants.R_OK | fs.constants.W_OK, function (err) {
-          assert.strictEqual(err.code, 'EACCES')
+          expect(err.code).toStrictEqual('EACCES')
           done()
         })
       })
@@ -746,7 +744,7 @@ describe('asar package', function () {
       it('throws an error when called on non-existent file', function (done) {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
         fs.access(p, function (err) {
-          assert.strictEqual(err.code, 'ENOENT')
+          expect(err.code).toStrictEqual('ENOENT')
           done()
         })
       })
@@ -754,7 +752,7 @@ describe('asar package', function () {
       it('allows write mode for unpacked files', function (done) {
         var p = path.join(fixtures, 'asar', 'unpack.asar', 'a.txt')
         fs.access(p, fs.constants.R_OK | fs.constants.W_OK, function (err) {
-          assert(err == null)
+          expect(err).toBeNull()
           done()
         })
       })
@@ -763,30 +761,30 @@ describe('asar package', function () {
     describe('fs.accessSync', function () {
       it('accesses a normal file', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'file1')
-        assert.doesNotThrow(function () {
+        expect(function () {
           fs.accessSync(p)
-        })
+        }).not.toThrow()
       })
 
       it('throws an error when called with write mode', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'file1')
-        assert.throws(function () {
+        expect(function () {
           fs.accessSync(p, fs.constants.R_OK | fs.constants.W_OK)
-        }, /EACCES/)
+        }).toThrow(/EACCES/)
       })
 
       it('throws an error when called on non-existent file', function () {
         var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
-        assert.throws(function () {
+        expect(function () {
           fs.accessSync(p)
-        }, /ENOENT/)
+        }).toThrow(/ENOENT/)
       })
 
       it('allows write mode for unpacked files', function () {
         var p = path.join(fixtures, 'asar', 'unpack.asar', 'a.txt')
-        assert.doesNotThrow(function () {
+        expect(function () {
           fs.accessSync(p, fs.constants.R_OK | fs.constants.W_OK)
-        })
+        }).not.toThrow()
       })
     })
 
@@ -794,7 +792,7 @@ describe('asar package', function () {
       it('opens a normal js file', function (done) {
         var child = ChildProcess.fork(path.join(fixtures, 'asar', 'a.asar', 'ping.js'))
         child.on('message', function (msg) {
-          assert.strictEqual(msg, 'message')
+          expect(msg).toStrictEqual('message')
           done()
         })
         child.send('message')
@@ -804,7 +802,7 @@ describe('asar package', function () {
         var file = path.join(fixtures, 'asar', 'a.asar', 'file1')
         var child = ChildProcess.fork(path.join(fixtures, 'module', 'asar.js'))
         child.on('message', function (content) {
-          assert.strictEqual(content, fs.readFileSync(file).toString())
+          expect(content).toStrictEqual(fs.readFileSync(file).toString())
           done()
         })
         child.send(file)
@@ -816,15 +814,15 @@ describe('asar package', function () {
 
       it('should not try to extract the command if there is a reference to a file inside an .asar', function (done) {
         ChildProcess.exec('echo ' + echo + ' foo bar', function (error, stdout) {
-          assert.strictEqual(error, null)
-          assert.strictEqual(stdout.toString().replace(/\r/g, ''), echo + ' foo bar\n')
+          expect(error).toStrictEqual(null)
+          expect(stdout.toString().replace(/\r/g, '')).toStrictEqual(echo + ' foo bar\n')
           done()
         })
       })
 
       it('can be promisified', () => {
         return util.promisify(ChildProcess.exec)('echo ' + echo + ' foo bar').then(({ stdout }) => {
-          assert.strictEqual(stdout.toString().replace(/\r/g, ''), echo + ' foo bar\n')
+          expect(stdout.toString().replace(/\r/g, '')).toStrictEqual(echo + ' foo bar\n')
         })
       })
     })
@@ -834,7 +832,7 @@ describe('asar package', function () {
 
       it('should not try to extract the command if there is a reference to a file inside an .asar', function (done) {
         var stdout = ChildProcess.execSync('echo ' + echo + ' foo bar')
-        assert.strictEqual(stdout.toString().replace(/\r/g, ''), echo + ' foo bar\n')
+        expect(stdout.toString().replace(/\r/g, '')).toStrictEqual(echo + ' foo bar\n')
         done()
       })
     })
@@ -845,28 +843,24 @@ describe('asar package', function () {
       execFileSync = ChildProcess.execFileSync
       echo = path.join(fixtures, 'asar', 'echo.asar', 'echo')
 
-      before(function () {
-        if (process.platform !== 'darwin') {
-          this.skip()
-        }
-      })
+      const test = process.platform !== 'darwin' ? xit : it
 
-      it('executes binaries', function (done) {
+      test('executes binaries', function (done) {
         execFile(echo, ['test'], function (error, stdout) {
-          assert.strictEqual(error, null)
-          assert.strictEqual(stdout, 'test\n')
+          expect(error).toStrictEqual(null)
+          expect(stdout).toStrictEqual('test\n')
           done()
         })
       })
 
-      xit('execFileSync executes binaries', function () {
+      test('execFileSync executes binaries', function () {
         var output = execFileSync(echo, ['test'])
-        assert.strictEqual(String(output), 'test\n')
+        expect(String(output)).toStrictEqual('test\n')
       })
 
-      it('can be promisified', () => {
+      test('can be promisified', () => {
         return util.promisify(ChildProcess.execFile)(echo, ['test']).then(({ stdout }) => {
-          assert.strictEqual(stdout, 'test\n')
+          expect(stdout).toStrictEqual('test\n')
         })
       })
     })
@@ -876,16 +870,16 @@ describe('asar package', function () {
 
       it('read a normal file', function () {
         var file1 = path.join(fixtures, 'asar', 'a.asar', 'file1')
-        assert.strictEqual(internalModuleReadJSON(file1).toString().trim(), 'file1')
+        expect(internalModuleReadJSON(file1).toString().trim()).toStrictEqual('file1')
         var file2 = path.join(fixtures, 'asar', 'a.asar', 'file2')
-        assert.strictEqual(internalModuleReadJSON(file2).toString().trim(), 'file2')
+        expect(internalModuleReadJSON(file2).toString().trim()).toStrictEqual('file2')
         var file3 = path.join(fixtures, 'asar', 'a.asar', 'file3')
-        assert.strictEqual(internalModuleReadJSON(file3).toString().trim(), 'file3')
+        expect(internalModuleReadJSON(file3).toString().trim()).toStrictEqual('file3')
       })
 
       it('reads a normal file with unpacked files', function () {
         var p = path.join(fixtures, 'asar', 'unpack.asar', 'a.txt')
-        assert.strictEqual(internalModuleReadJSON(p).toString().trim(), 'a')
+        expect(internalModuleReadJSON(p).toString().trim()).toStrictEqual('a')
       })
     })
 
@@ -902,8 +896,8 @@ describe('asar package', function () {
           if (typeof originalValue === 'undefined' || originalValue === null) continue
 
           if (hasOwnProperty.call(originalValue, util.promisify.custom)) {
-            expect(fs).to.have.own.property(propertyName)
-              .that.has.own.property(util.promisify.custom)
+            expect(fs).toHaveProperty(propertyName)
+            expect(fs[propertyName][util.promisify.custom]).toBeTruthy()
           }
         }
       })
@@ -923,31 +917,31 @@ describe('asar package', function () {
       it('disables asar support in sync API', function () {
         var file = path.join(fixtures, 'asar', 'a.asar', 'file1')
         var dir = path.join(fixtures, 'asar', 'a.asar', 'dir1')
-        assert.throws(function () {
+        expect(function () {
           fs.readFileSync(file)
-        }, new RegExp(errorName))
-        assert.throws(function () {
+        }).toThrow(new RegExp(errorName))
+        expect(function () {
           fs.lstatSync(file)
-        }, new RegExp(errorName))
-        assert.throws(function () {
+        }).toThrow(new RegExp(errorName))
+        expect(function () {
           fs.realpathSync(file)
-        }, new RegExp(errorName))
-        assert.throws(function () {
+        }).toThrow(new RegExp(errorName))
+        expect(function () {
           fs.readdirSync(dir)
-        }, new RegExp(errorName))
+        }).toThrow(new RegExp(errorName))
       })
 
       it('disables asar support in async API', function (done) {
         var file = path.join(fixtures, 'asar', 'a.asar', 'file1')
         var dir = path.join(fixtures, 'asar', 'a.asar', 'dir1')
         fs.readFile(file, function (error) {
-          assert.strictEqual(error.code, errorName)
+          expect(error.code).toStrictEqual(errorName)
           fs.lstat(file, function (error) {
-            assert.strictEqual(error.code, errorName)
+            expect(error.code).toStrictEqual(errorName)
             fs.realpath(file, function (error) {
-              assert.strictEqual(error.code, errorName)
+              expect(error.code).toStrictEqual(errorName)
               fs.readdir(dir, function (error) {
-                assert.strictEqual(error.code, errorName)
+                expect(error.code).toStrictEqual(errorName)
                 done()
               })
             })
@@ -960,37 +954,37 @@ describe('asar package', function () {
         var asar = path.join(fixtures, 'asar', 'a.asar')
         var content1 = fs.readFileSync(asar)
         var content2 = originalFs.readFileSync(asar)
-        assert.strictEqual(content1.compare(content2), 0)
-        assert.throws(function () {
+        expect(content1.compare(content2)).toStrictEqual(0)
+        expect(function () {
           fs.readdirSync(asar)
-        }, /ENOTDIR/)
+        }).toThrow(/ENOTDIR/)
       })
 
       it('is reset to its original value when execSync throws an error', function () {
         process.noAsar = false
-        assert.throws(function () {
+        expect(function () {
           ChildProcess.execSync(path.join(__dirname, 'does-not-exist.txt'))
-        })
-        assert.strictEqual(process.noAsar, false)
+        }).toThrow()
+        expect(process.noAsar).toStrictEqual(false)
       })
     })
 
     describe('process.env.ELECTRON_NO_ASAR', function () {
       it('disables asar support in forked processes', function (done) {
-        const forked = ChildProcess.fork(path.join(__dirname, 'fixtures', 'module', 'no-asar.js'), [], {
+        const forked = ChildProcess.fork(path.join(fixtures, 'module', 'no-asar.js'), [], {
           env: {
             ELECTRON_NO_ASAR: true
           }
         })
         forked.on('message', function (stats) {
-          assert.strictEqual(stats.isFile, true)
-          assert.strictEqual(stats.size, 778)
+          expect(stats.isFile).toStrictEqual(true)
+          expect(stats.size).toStrictEqual(778)
           done()
         })
       })
 
       it('disables asar support in spawned processes', function (done) {
-        const spawned = ChildProcess.spawn(process.execPath, [path.join(__dirname, 'fixtures', 'module', 'no-asar.js')], {
+        const spawned = ChildProcess.spawn(process.execPath, [path.join(fixtures, 'module', 'no-asar.js')], {
           env: {
             ELECTRON_NO_ASAR: true,
             ELECTRON_RUN_AS_NODE: true
@@ -1003,8 +997,8 @@ describe('asar package', function () {
         })
         spawned.stdout.on('close', function () {
           const stats = JSON.parse(output)
-          assert.strictEqual(stats.isFile, true)
-          assert.strictEqual(stats.size, 778)
+          expect(stats.isFile).toStrictEqual(true)
+          expect(stats.size).toStrictEqual(778)
           done()
         })
       })
@@ -1018,54 +1012,43 @@ describe('asar package', function () {
       return closeWindow(w).then(function () { w = null })
     })
 
-    it('can request a file in package', function (done) {
+    it('can request a file in package', async function () {
       var p = path.resolve(fixtures, 'asar', 'a.asar', 'file1')
-      $.get('file://' + p, function (data) {
-        assert.strictEqual(data.trim(), 'file1')
-        done()
-      })
+      const data = await (await fetch('file://' + p)).text()
+      expect(data.trim()).toEqual('file1')
     })
 
-    it('can request a file in package with unpacked files', function (done) {
+    it('can request a file in package with unpacked files', async function () {
       var p = path.resolve(fixtures, 'asar', 'unpack.asar', 'a.txt')
-      $.get('file://' + p, function (data) {
-        assert.strictEqual(data.trim(), 'a')
-        done()
-      })
+      const data = await (await fetch('file://' + p)).text()
+      expect(data.trim()).toEqual('a')
     })
 
-    it('can request a linked file in package', function (done) {
+    it('can request a linked file in package', async function () {
       var p = path.resolve(fixtures, 'asar', 'a.asar', 'link2', 'link1')
-      $.get('file://' + p, function (data) {
-        assert.strictEqual(data.trim(), 'file1')
-        done()
-      })
+      const data = await (await fetch('file://' + p)).text()
+      expect(data.trim()).toEqual('file1')
     })
 
-    it('can request a file in filesystem', function (done) {
+    it('can request a file in filesystem', async function () {
       var p = path.resolve(fixtures, 'asar', 'file')
-      $.get('file://' + p, function (data) {
-        assert.strictEqual(data.trim(), 'file')
-        done()
-      })
+      const data = await (await fetch('file://' + p)).text()
+      expect(data.trim()).toEqual('file')
     })
 
     it('gets 404 when file is not found', function (done) {
       var p = path.resolve(fixtures, 'asar', 'a.asar', 'no-exist')
+      eval(fs.readFileSync(path.resolve(__dirname, '../spec/static/jquery-2.0.3.min.js'), 'utf8'))
       $.ajax({
         url: 'file://' + p,
         error: function (err) {
-          assert.strictEqual(err.status, 404)
+          expect(err.status).toEqual(404)
           done()
         }
       })
     })
 
     it('sets __dirname correctly', function (done) {
-      after(function () {
-        ipcMain.removeAllListeners('dirname')
-      })
-
       w = new BrowserWindow({
         show: false,
         width: 400,
@@ -1073,17 +1056,13 @@ describe('asar package', function () {
       })
       var p = path.resolve(fixtures, 'asar', 'web.asar', 'index.html')
       ipcMain.once('dirname', function (event, dirname) {
-        assert.strictEqual(dirname, path.dirname(p))
+        expect(dirname).toStrictEqual(path.dirname(p))
         done()
       })
       w.loadFile(p)
     })
 
     it('loads script tag in html', function (done) {
-      after(function () {
-        ipcMain.removeAllListeners('ping')
-      })
-
       w = new BrowserWindow({
         show: false,
         width: 400,
@@ -1092,18 +1071,12 @@ describe('asar package', function () {
       var p = path.resolve(fixtures, 'asar', 'script.asar', 'index.html')
       w.loadFile(p)
       ipcMain.once('ping', function (event, message) {
-        assert.strictEqual(message, 'pong')
+        expect(message).toStrictEqual('pong')
         done()
       })
     })
 
     it('loads video tag in html', function (done) {
-      this.timeout(60000)
-
-      after(function () {
-        ipcMain.removeAllListeners('asar-video')
-      })
-
       w = new BrowserWindow({
         show: false,
         width: 400,
@@ -1111,15 +1084,15 @@ describe('asar package', function () {
       })
       var p = path.resolve(fixtures, 'asar', 'video.asar', 'index.html')
       w.loadFile(p)
-      ipcMain.on('asar-video', function (event, message, error) {
+      ipcMain.once('asar-video', function (event, message, error) {
         if (message === 'ended') {
-          assert(!error)
+          expect(error).toBeNull()
           done()
         } else if (message === 'error') {
           done(error)
         }
       })
-    })
+    }, 60000)
   })
 
   describe('original-fs module', function () {
@@ -1128,13 +1101,13 @@ describe('asar package', function () {
     it('treats .asar as file', function () {
       var file = path.join(fixtures, 'asar', 'a.asar')
       var stats = originalFs.statSync(file)
-      assert(stats.isFile())
+      expect(stats.isFile()).toBeTruthy()
     })
 
     it('is available in forked scripts', function (done) {
       var child = ChildProcess.fork(path.join(fixtures, 'module', 'original-fs.js'))
       child.on('message', function (msg) {
-        assert.strictEqual(msg, 'object')
+        expect(msg).toStrictEqual('object')
         done()
       })
       child.send('message')
@@ -1146,10 +1119,10 @@ describe('asar package', function () {
 
     it('recognize asar archvies', function () {
       var p = path.join(fixtures, 'asar', 'a.asar', 'link1')
-      assert.strictEqual(gfs.readFileSync(p).toString().trim(), 'file1')
+      expect(gfs.readFileSync(p).toString().trim()).toStrictEqual('file1')
     })
     it('does not touch global fs object', function () {
-      assert.notStrictEqual(fs.readdir, gfs.readdir)
+      expect(fs.readdir).not.toStrictEqual(gfs.readdir)
     })
   })
 
@@ -1158,9 +1131,9 @@ describe('asar package', function () {
 
     it('throws error when calling inside asar archive', function () {
       var p = path.join(fixtures, 'asar', 'a.asar', 'not-exist')
-      assert.throws(function () {
+      expect(function () {
         mkdirp.sync(p)
-      }, new RegExp('ENOTDIR'))
+      }).toThrow(/ENOTDIR/)
     })
   })
 
@@ -1168,7 +1141,7 @@ describe('asar package', function () {
     it('reads image from asar archive', function () {
       var p = path.join(fixtures, 'asar', 'logo.asar', 'logo.png')
       var logo = nativeImage.createFromPath(p)
-      assert.deepStrictEqual(logo.getSize(), {
+      expect(logo.getSize()).toStrictEqual({
         width: 55,
         height: 55
       })
@@ -1177,7 +1150,7 @@ describe('asar package', function () {
     it('reads image from asar archive with unpacked files', function () {
       var p = path.join(fixtures, 'asar', 'unpack.asar', 'atom.png')
       var logo = nativeImage.createFromPath(p)
-      assert.deepStrictEqual(logo.getSize(), {
+      expect(logo.getSize()).toStrictEqual({
         width: 1024,
         height: 1024
       })
