@@ -36,6 +36,7 @@ template("asar") {
   assert(defined(invoker.outputs),
          "Need asar name (as 1-element array, e.g. \$root_out_dir/foo.asar)")
   assert(defined(invoker.root), "Need asar root directory")
+  assert(defined(invoker.cwd), "Need asar cwd")
   asar_root = invoker.root
 
   # js2asar.py expects relative paths to its inputs, so we must run it in a
@@ -44,7 +45,10 @@ template("asar") {
     sources = invoker.sources
     outputs = invoker.outputs
     script = "//electron/tools/js2asar.py"
-    cwd = rebase_path(get_path_info(".", "abspath"))
-    args = rebase_path(outputs, cwd) + [ asar_root ] + rebase_path(sources, ".")
+    cwd = rebase_path(get_path_info(invoker.cwd, "abspath"))
+    args = rebase_path(outputs, cwd) + [ asar_root ] + rebase_path(sources, invoker.cwd)
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
   }
 }

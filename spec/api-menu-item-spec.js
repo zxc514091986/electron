@@ -3,7 +3,7 @@ const dirtyChai = require('dirty-chai')
 
 const { remote } = require('electron')
 const { BrowserWindow, app, Menu, MenuItem } = remote
-const roles = require('../lib/browser/api/menu-item-roles')
+const roles = require('../src/browser/api/menu-item-roles')
 const { closeWindow } = require('./window-helpers')
 
 const { expect } = chai

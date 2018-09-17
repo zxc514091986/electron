@@ -80,30 +80,24 @@ config("features") {
 npm_action("atom_browserify_sandbox") {
   deps = [
     ":atom_js2c_copy",
+    ":babel_src",
   ]
 
   sandbox_args = [
-    "lib/sandboxed_renderer/init.js",
+    rebase_path(get_path_info("$target_gen_dir/src/electron/src/sandboxed_renderer/init.js", "abspath")),
     "-r",
-    "./lib/sandboxed_renderer/api/exports/electron.js:electron",
+    rebase_path(get_path_info("$target_gen_dir/src/electron/src/sandboxed_renderer/api/exports/electron.js", "abspath")) + ":electron",
     "-r",
-    "./lib/sandboxed_renderer/api/exports/fs.js:fs",
+    rebase_path(get_path_info("$target_gen_dir/src/electron/src/sandboxed_renderer/api/exports/fs.js", "abspath")) + ":fs",
     "-r",
-    "./lib/sandboxed_renderer/api/exports/os.js:os",
+    rebase_path(get_path_info("$target_gen_dir/src/electron/src/sandboxed_renderer/api/exports/os.js", "abspath")) + ":os",
     "-r",
-    "./lib/sandboxed_renderer/api/exports/path.js:path",
+    rebase_path(get_path_info("$target_gen_dir/src/electron/src/sandboxed_renderer/api/exports/path.js", "abspath")) + ":path",
     "-r",
-    "./lib/sandboxed_renderer/api/exports/child_process.js:child_process",
+    rebase_path(get_path_info("$target_gen_dir/src/electron/src/sandboxed_renderer/api/exports/child_process.js", "abspath")) + ":child_process",
   ]
 
-  inputs = [
-    "lib/sandboxed_renderer/init.js",
-    "lib/sandboxed_renderer/api/exports/electron.js",
-    "lib/sandboxed_renderer/api/exports/fs.js",
-    "lib/sandboxed_renderer/api/exports/os.js",
-    "lib/sandboxed_renderer/api/exports/path.js",
-    "lib/sandboxed_renderer/api/exports/child_process.js",
-  ]
+  inputs = []
   outputs = [
     "$target_gen_dir/js2c/preload_bundle.js",
   ]
@@ -118,26 +112,63 @@ npm_action("atom_browserify_sandbox") {
 npm_action("atom_browserify_isolated") {
   deps = [
     ":atom_js2c_copy",
+    ":babel_src",
   ]
 
   inputs = [
-    "lib/isolated_renderer/init.js",
+    "$target_gen_dir/src/electron/src/isolated_renderer/init.js",
   ]
   outputs = [
     "$target_gen_dir/js2c/isolated_bundle.js",
   ]
 
   script = "browserify"
-  args = inputs + [
+  args = rebase_path(get_path_info(inputs, "abspath")) + [
            "-o",
            rebase_path(outputs[0]),
          ]
 }
 
+action_foreach("babel_src") {
+  script = "tools/babel.py"
+  sources = filenames.js_sources
+
+  sources += filenames.js2c_sources
+
+  if (enable_desktop_capturer) {
+    sources += [
+      "src/browser/desktop-capturer.js",
+      "src/renderer/api/desktop-capturer.js",
+    ]
+  }
+  if (enable_view_api) {
+    sources += [
+      "src/browser/api/box-layout.js",
+      "src/browser/api/button.js",
+      "src/browser/api/label-button.js",
+      "src/browser/api/layout-manager.js",
+      "src/browser/api/text-field.js",
+    ]
+  }
+
+  inputs = [ ".babelrc" ]
+
+  outputs = [ "$target_gen_dir/js_out/" + rebase_path("{{source}}", ".", "../../electron/src/") ]
+
+  args = [
+    "{{source}}",
+    rebase_path(get_path_info(outputs[0], "abspath"))
+  ]
+}
+
 copy("atom_js2c_copy") {
+  deps = [
+    ":babel_src"
+  ]
+
   sources = [
-    "lib/common/asar.js",
-    "lib/common/asar_init.js",
+    "$target_gen_dir/src/electron/src/common/asar.js",
+    "$target_gen_dir/src/electron/src/common/asar_init.js",
   ]
   outputs = [
     "$target_gen_dir/js2c/{{source_file_part}}",
@@ -171,26 +202,17 @@ action("atom_js2c") {
 }
 
 asar("js2asar") {
-  sources = filenames.js_sources
-  if (enable_desktop_capturer) {
-    sources += [
-      "lib/browser/desktop-capturer.js",
-      "lib/renderer/api/desktop-capturer.js",
-    ]
-  }
-  if (enable_view_api) {
-    sources += [
-      "lib/browser/api/box-layout.js",
-      "lib/browser/api/button.js",
-      "lib/browser/api/label-button.js",
-      "lib/browser/api/layout-manager.js",
-      "lib/browser/api/text-field.js",
-    ]
-  }
+  deps = [
+    ":babel_src"
+  ]
+
+  sources = get_target_outputs(":babel_src")
+
   outputs = [
     "$root_out_dir/resources/electron.asar",
   ]
   root = "lib"
+  cwd = rebase_path(get_path_info("$target_gen_dir/src/electron/src", "abspath"))
 }
 
 asar("app2asar") {
@@ -199,6 +221,7 @@ asar("app2asar") {
     "$root_out_dir/resources/default_app.asar",
   ]
   root = "default_app"
+  cwd = "."
 }
 
 static_library("electron_lib") {

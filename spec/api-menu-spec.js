@@ -3,7 +3,7 @@ const dirtyChai = require('dirty-chai')
 
 const { ipcRenderer, remote } = require('electron')
 const { BrowserWindow, Menu, MenuItem } = remote
-const { sortMenuItems } = require('../lib/browser/api/menu-utils')
+const { sortMenuItems } = require('../src/browser/api/menu-utils')
 const { closeWindow } = require('./window-helpers')
 
 const { expect } = chai
