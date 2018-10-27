@@ -339,34 +339,16 @@ describe('nativeImage module', () => {
     })
 
     it('returns empty on non-darwin platforms', function () {
-      if (process.platform === 'darwin') {
-        // FIXME(alexeykuzmin): Skip the test.
-        // this.skip()
-        return
-      }
-
       const image = nativeImage.createFromNamedImage('NSActionTemplate')
       expect(image.isEmpty())
     })
 
     it('returns a valid image on darwin', function () {
-      if (process.platform !== 'darwin') {
-        // FIXME(alexeykuzmin): Skip the test.
-        // this.skip()
-        return
-      }
-
       const image = nativeImage.createFromNamedImage('NSActionTemplate')
       expect(image.isEmpty()).to.be.false()
     })
 
     it('returns allows an HSL shift for a valid image on darwin', function () {
-      if (process.platform !== 'darwin') {
-        // FIXME(alexeykuzmin): Skip the test.
-        // this.skip()
-        return
-      }
-
       const image = nativeImage.createFromNamedImage('NSActionTemplate', [0.5, 0.2, 0.8])
       expect(image.isEmpty()).to.be.false()
     })
