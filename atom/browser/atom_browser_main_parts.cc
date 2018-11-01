@@ -552,7 +552,7 @@ void AtomBrowserMainParts::PreMainMessageLoopStartCommon() {
 
 #if defined(OS_MACOSX)
   if (custom_locale_.empty())
-    l10n_util::OverrideLocaleWithCocoaLocale();
+    custom_locale_ = GetSystemPreferredLanguage();
 #endif
   LoadResourceBundle(custom_locale_);
 #if defined(OS_MACOSX)
