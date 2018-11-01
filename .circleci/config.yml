@@ -481,9 +481,9 @@ steps-electron-build-for-tests: &steps-electron-build-for-tests
 
     # Breakpad symbols.
     # TODO(alexeykuzmin): We should do it only in nightly builds.
-    - *step-build-dump-syms
-    - *step-generate-breakpad-symbols
-    - *step-zip-symbols
+    #- *step-build-dump-syms
+    #- *step-generate-breakpad-symbols
+    #- *step-zip-symbols
 
     # Trigger tests on arm hardware if needed
     - *step-maybe-trigger-arm-test
