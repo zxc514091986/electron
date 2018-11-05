@@ -652,7 +652,7 @@ steps-tests: &steps-tests
           export NSS_DISABLE_ARENA_FREE_LIST=1
           export NSS_DISABLE_UNLOAD=1
           cd src/electron
-          npm run test -- --ci 2>&1 | $ASAN_SYMBOLIZE
+          npm run test -- --ci 2>&1 | "$ASAN_SYMBOLIZE" out/Default/../../
     - run:
         name: Check test results existence
         command: |
