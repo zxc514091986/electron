@@ -207,35 +207,6 @@ index 49b4ead3dc521796bf3c6a207a072ff5eeff1849..0083e5c8efb71cf2cb097944174dcad8
 +    defines += [ "ELECTRON_NO_DCHECK" ]
 +  }
  }
-diff --git a/third_party/blink/renderer/platform/wtf/text/string_impl.h b/third_party/blink/renderer/platform/wtf/text/string_impl.h
-index 0e7c40b732ec283e006b2e3517c42e699d7e3102..7c513d95a586d8ac80e691aa89abaf49793e9a18 100644
---- a/third_party/blink/renderer/platform/wtf/text/string_impl.h
-+++ b/third_party/blink/renderer/platform/wtf/text/string_impl.h
-@@ -258,21 +258,21 @@ class WTF_EXPORT StringImpl {
-   }
- 
-   ALWAYS_INLINE bool HasOneRef() const {
--#if DCHECK_IS_ON()
-+#if 0
-     DCHECK(IsStatic() || verifier_.IsSafeToUse()) << AsciiForDebugging();
- #endif
-     return ref_count_ == 1;
-   }
- 
-   ALWAYS_INLINE void AddRef() const {
--#if DCHECK_IS_ON()
-+#if 0
-     DCHECK(IsStatic() || verifier_.OnRef(ref_count_)) << AsciiForDebugging();
- #endif
-     ++ref_count_;
-   }
- 
-   ALWAYS_INLINE void Release() const {
--#if DCHECK_IS_ON()
-+#if 0
-     DCHECK(IsStatic() || verifier_.OnDeref(ref_count_))
-         << AsciiForDebugging() << " " << CurrentThread();
- #endif
 diff --git a/ui/base/clipboard/clipboard_win.cc b/ui/base/clipboard/clipboard_win.cc
 index e49dd8c81270cdd9794ddee11bad036c2f444af5..9e61c901cd2df168520b83a8522ca8c032f4c0ae 100644
 --- a/ui/base/clipboard/clipboard_win.cc
