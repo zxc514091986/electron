@@ -4,6 +4,7 @@
 
 #include "atom/browser/api/atom_api_web_contents.h"
 
+#include "chrome/browser/browser_process.h"
 #include "content/public/common/renderer_preferences.h"
 
 namespace atom {
