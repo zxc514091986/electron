@@ -597,9 +597,4 @@ void AtomBrowserClient::RenderProcessExited(content::RenderProcessHost* host,
   }
 }
 
-bool AtomBrowserClient::ShouldEnableStrictSiteIsolation() {
-  // Enable site isolation. It is off by default in Chromium <= 69.
-  return true;
-}
-
 }  // namespace atom

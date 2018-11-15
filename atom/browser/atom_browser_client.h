@@ -46,9 +46,6 @@ class AtomBrowserClient : public brightray::BrowserClient,
   static void SetCustomServiceWorkerSchemes(
       const std::vector<std::string>& schemes);
 
-  // content::ContentBrowserClient:
-  bool ShouldEnableStrictSiteIsolation() override;
-
  protected:
   // content::ContentBrowserClient:
   void RenderProcessWillLaunch(
