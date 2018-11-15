@@ -4,7 +4,6 @@ dcheck.patch
 accelerator.patch
 app_indicator_icon_menu.patch
 blink_file_path.patch
-blink_local_frame.patch
 blink_world_context.patch
 browser_compositor_mac.patch
 browser_plugin_wheel.patch
