@@ -545,6 +545,17 @@ AtomBrowserClient::OverrideSystemLocationProvider() {
 #endif
 }
 
+bool AtomBrowserClient::DoesSiteRequireDedicatedProcess(
+    content::BrowserContext* browser_context,
+    const GURL& effective_site_url) {
+  if (effective_site_url.SchemeIs(url::kJavaScriptScheme)) {
+    // "javacript:" scheme should always use same SiteInstance
+    return false;
+  }
+
+  return true;
+}
+
 brightray::BrowserMainParts* AtomBrowserClient::OverrideCreateBrowserMainParts(
     const content::MainFunctionParams&) {
   v8::V8::Initialize();  // Init V8 before creating main parts.
