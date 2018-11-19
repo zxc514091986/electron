@@ -1270,7 +1270,7 @@ describe('BrowserWindow module', () => {
           }
         })
         ipcRenderer.send('set-web-preferences-on-next-new-window', w.webContents.id, 'preload', preload)
-        let htmlPath = path.join(fixtures, 'api', 'sandbox.html?window-open')
+        const htmlPath = path.join(fixtures, 'api', 'sandbox.html?window-open')
         const pageUrl = 'file://' + htmlPath
         w.loadURL(pageUrl)
         w.webContents.once('new-window', (e, url, frameName, disposition, options) => {
@@ -1298,11 +1298,13 @@ describe('BrowserWindow module', () => {
           }
         })
 
-        ipcRenderer.send('set-web-preferences-on-next-new-window', w.webContents.id, 'preload', preload)
-        w.loadFile(
-          path.join(fixtures, 'api', 'sandbox.html'),
-          { search: 'window-open-external' }
-        )
+        ipcRenderer.send(
+            'set-web-preferences-on-next-new-window', w.webContents.id,
+            'preload', preload)
+
+        const htmlPath = path.join(fixtures, 'api', 'sandbox.html?window-open-external')
+        const pageUrl = 'file://' + htmlPath
+        w.loadURL(pageUrl)
 
         // Wait for a message from the main window saying that it's ready.
         await emittedOnce(ipcMain, 'opener-loaded')
