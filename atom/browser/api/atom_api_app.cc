@@ -1359,7 +1359,7 @@ void App::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("startAccessingSecurityScopedResource",
                  &App::StartAccessingSecurityScopedResource)
 #endif
-      .SetMethod("enableSandbox", &App::EnableSandbox)
+      .SetMethod("enableSandbox", &App::EnableSandbox);
 }
 
 }  // namespace api
