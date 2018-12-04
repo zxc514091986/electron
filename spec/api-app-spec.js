@@ -281,7 +281,7 @@ describe('app module', () => {
     })
   })
 
-  xdescribe('app.importCertificate', () => {
+  describe('app.importCertificate', () => {
     let w = null
 
     before(function () {
