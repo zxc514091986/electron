@@ -4,12 +4,15 @@
 
 #include "atom/browser/api/atom_api_global_shortcut.h"
 
+#include <iostream>
 #include <string>
 #include <vector>
 
+#include "atom/browser/api/atom_api_system_preferences.h"
 #include "atom/common/native_mate_converters/accelerator_converter.h"
 #include "atom/common/native_mate_converters/callback.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "native_mate/dictionary.h"
 
 #include "atom/common/node_includes.h"
@@ -43,7 +46,18 @@ bool GlobalShortcut::RegisterAll(
     const std::vector<ui::Accelerator>& accelerators,
     const base::Closure& callback) {
   std::vector<ui::Accelerator> registered;
+  std::vector<std::string> mediaKeys = {"Media Play/Pause", "Media Next Track",
+                                        "Media Previous Track"};
+
   for (auto& accelerator : accelerators) {
+    std::string shortcutText = base::UTF16ToUTF8(accelerator.GetShortcutText());
+    if (std::find(mediaKeys.begin(), mediaKeys.end(), shortcutText) !=
+        mediaKeys.end()) {
+      SystemPreferences* sys = nullptr;
+      bool trusted = sys->IsTrustedAccessibilityClient(false);
+      if (!trusted)
+        return false;
+    }
     GlobalShortcutListener* listener = GlobalShortcutListener::GetInstance();
     if (!listener->RegisterAccelerator(accelerator, this)) {
       // unregister all shortcuts if any failed
@@ -59,6 +73,18 @@ bool GlobalShortcut::RegisterAll(
 
 bool GlobalShortcut::Register(const ui::Accelerator& accelerator,
                               const base::Closure& callback) {
+  std::vector<std::string> mediaKeys = {"Media Play/Pause", "Media Next Track",
+                                        "Media Previous Track"};
+  std::string shortcutText = base::UTF16ToUTF8(accelerator.GetShortcutText());
+
+  if (std::find(mediaKeys.begin(), mediaKeys.end(), shortcutText) !=
+      mediaKeys.end()) {
+    SystemPreferences* sys = nullptr;
+    bool trusted = sys->IsTrustedAccessibilityClient(false);
+    if (!trusted)
+      return false;
+  }
+
   if (!GlobalShortcutListener::GetInstance()->RegisterAccelerator(accelerator,
                                                                   this)) {
     return false;
