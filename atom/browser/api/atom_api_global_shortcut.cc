@@ -4,7 +4,6 @@
 
 #include "atom/browser/api/atom_api_global_shortcut.h"
 
-#include <iostream>
 #include <string>
 #include <vector>
 
