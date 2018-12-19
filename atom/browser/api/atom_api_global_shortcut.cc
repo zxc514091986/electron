@@ -49,6 +49,7 @@ bool GlobalShortcut::RegisterAll(
                                         "Media Previous Track"};
 
   for (auto& accelerator : accelerators) {
+#if defined(OS_MACOSX)
     std::string shortcutText = base::UTF16ToUTF8(accelerator.GetShortcutText());
     if (std::find(mediaKeys.begin(), mediaKeys.end(), shortcutText) !=
         mediaKeys.end()) {
@@ -63,7 +64,7 @@ bool GlobalShortcut::RegisterAll(
       UnregisterSome(registered);
       return false;
     }
-
+#endif
     registered.push_back(accelerator);
     accelerator_callback_map_[accelerator] = callback;
   }
@@ -72,6 +73,7 @@ bool GlobalShortcut::RegisterAll(
 
 bool GlobalShortcut::Register(const ui::Accelerator& accelerator,
                               const base::Closure& callback) {
+#if defined(OS_MACOSX)
   std::vector<std::string> mediaKeys = {"Media Play/Pause", "Media Next Track",
                                         "Media Previous Track"};
   std::string shortcutText = base::UTF16ToUTF8(accelerator.GetShortcutText());
@@ -83,6 +85,7 @@ bool GlobalShortcut::Register(const ui::Accelerator& accelerator,
     if (!trusted)
       return false;
   }
+#endif
 
   if (!GlobalShortcutListener::GetInstance()->RegisterAccelerator(accelerator,
                                                                   this)) {
