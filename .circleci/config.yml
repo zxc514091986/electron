@@ -33,6 +33,12 @@ executors:
     macos:
       xcode: "8.3.3"
 
+  mac-large:
+    resource_class: large
+    macos:
+      xcode: "8.3.3"
+
+
 # Build configurations options.
 env-debug-build: &env-debug-build
   GN_CONFIG: //electron/build/args/debug.gn
@@ -751,11 +757,6 @@ steps-build-mac: &steps-build-mac
     # Save all data needed for a further tests run.
     - *step-persist-data-for-tests
 
-filter-only-prs-from-forks: &filter-only-prs-from-forks
-  filters:
-    branches:
-      only: /^pull\/.*$/
-
 chromium-upgrade-branches: &chromium-upgrade-branches
   /chromium\-upgrade\/[0-9]+/
 
@@ -996,14 +997,14 @@ jobs:
     <<: *steps-native-mksnapshot-build
 
   osx-testing:
-    executor: mac
+    executor: mac-large
     environment:
       <<: *env-testing-build
       <<: *env-enable-sccache
     <<: *steps-build-mac
 
   mas-testing:
-    executor: mac
+    executor: mac-large
     environment:
       <<: *env-mas
       <<: *env-testing-build
@@ -1160,21 +1161,19 @@ workflows:
           requires:
             - linux-checkout
 
-  build-mac-fork-prs:
+  build-mac:
     jobs:
-      - osx-testing:
-         <<: *filter-only-prs-from-forks
+      - osx-testing
+
       - mac-tests:
           name: osx-testing-tests
-          <<: *filter-only-prs-from-forks
           requires:
             - osx-testing
 
-      - mas-testing:
-          <<: *filter-only-prs-from-forks
+      - mas-testing
+
       - mac-tests:
           name: mas-testing-tests
-          <<: *filter-only-prs-from-forks
           requires:
             - mas-testing
 
