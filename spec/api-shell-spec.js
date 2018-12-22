@@ -19,8 +19,8 @@ describe('shell module', () => {
   describe('shell.openExternal()', () => {
     let envVars = {}
 
-    beforeEach(() => {
-      // keep original process.env values to prevent side effect
+    beforeEach(function () {
+      if (process.platform === 'win32') this.skip()
       envVars = {
         display: process.env.DISPLAY,
         de: process.env.DE,
@@ -29,31 +29,32 @@ describe('shell module', () => {
     })
 
     afterEach(() => {
-      process.env.BROWSER = envVars.browser
-      process.env.DE = envVars.de
-      process.env.DISPLAY = envVars.display
+      // reset env vars to prevent side effects
+      if (process.platform === 'linux') {
+        process.env.DE = envVars.de
+        process.env.BROWSER = envVars.browser
+        process.env.DISPLAY = envVars.display
+      }
     })
 
     it('opens an external link asynchronously', function (done) {
-      if (process.platform !== 'linux') this.skip()
-
-      // set env vars for xdg-open
       const url = 'http://www.example.com'
-      process.env.DE = 'generic'
-      process.env.BROWSER = '/bin/true'
-      process.env.DISPLAY = ''
+      if (process.platform === 'linux') {
+        process.env.BROWSER = '/bin/true'
+        process.env.DE = 'generic'
+        process.env.DISPLAY = ''
+      }
 
       shell.openExternal(url).then(() => done())
     })
 
     it('opens an external link synchronously', function () {
-      if (process.platform !== 'linux') this.skip()
-
-      // set env vars for xdg-open
       const url = 'http://www.example.com'
-      process.env.DE = 'generic'
-      process.env.BROWSER = '/bin/true'
-      process.env.DISPLAY = ''
+      if (process.platform === 'linux') {
+        process.env.DE = 'generic'
+        process.env.DE = '/bin/true'
+        process.env.DISPLAY = ''
+      }
 
       const success = shell.openExternalSync(url)
       assert.strictEqual(true, success)
